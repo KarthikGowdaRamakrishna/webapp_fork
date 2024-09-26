@@ -5,6 +5,8 @@ const app = express();
 // Middlewares
 app.use(express.json());
 
+app.head('/healthz', healthController.methodNotAllowed);
+
 // Health Check Route
 app.get('/healthz', healthController.healthCheck);
 
