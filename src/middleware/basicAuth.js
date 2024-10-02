@@ -34,4 +34,6 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
+// basicAuth.js
 module.exports = authenticateUser;
+
