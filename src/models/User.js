@@ -1,6 +1,6 @@
 // src/models/User.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database.js'); // Import the sequelize instance
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js'; // Import the sequelize instance
 
 const User = sequelize.define('User', {
   id: {
@@ -42,4 +42,4 @@ const User = sequelize.define('User', {
   timestamps: false, // Disable automatic timestamps as we are defining custom ones
 });
 
-module.exports = User;
+export default User;

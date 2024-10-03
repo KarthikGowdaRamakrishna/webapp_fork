@@ -1,5 +1,5 @@
-const Sequelize = require('sequelize');
-const dotenv = require('dotenv');
+import { Sequelize } from "sequelize";
+import dotenv from 'dotenv';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -18,7 +18,7 @@ const sequelize = new Sequelize(
 
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({ alter: true });  // This will create or update the table structure
+    await sequelize.sync({ alter: false });  // This will create or update the table structure
     console.log('All models were synchronized successfully.');
   } catch (error) {
     console.error('Error syncing models with the database:', error);
@@ -32,4 +32,4 @@ sequelize.authenticate()
     console.log('Database connected...')})
   .catch(err => console.error('Error connecting to the database:', err));
 
-module.exports = sequelize;
+export default sequelize;

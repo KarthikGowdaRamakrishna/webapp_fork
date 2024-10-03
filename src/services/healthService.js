@@ -1,6 +1,6 @@
-const sequelize = require('../config/database.js');
+import sequelize from "../config/database.js";
 
-exports.checkDatabaseConnection = async () => {
+const healthService = async () => {
     try {
       // Attempt to authenticate with the database
       await sequelize.authenticate();
@@ -10,4 +10,6 @@ exports.checkDatabaseConnection = async () => {
       return false;  // Connection failed
     }
   };
+
+  export default healthService;
   
