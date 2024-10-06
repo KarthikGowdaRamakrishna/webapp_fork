@@ -3,7 +3,7 @@ name: Node.js CI
 on:
   pull_request:
     branches: 
-        - main # Change this to the branches you want to run the workflow on
+        - '**' 
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x] # Specify the Node.js versions you want to test
+        node-version: [16.x, 18.x] 
 
     steps:
       - name: Checkout repository
