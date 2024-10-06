@@ -66,5 +66,6 @@ Make sure your MySQL and PostgreSQL servers are running. Create the necessary da
 
 ### 5. Testing the Application
 
-Currently, there are no tests specified in this project. You can create tests in the `test` folder and configure the `npm test` script in the `package.json`.
+````bash
+npm test
 
