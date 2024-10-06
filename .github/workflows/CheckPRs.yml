@@ -1,0 +1,28 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches: [ main ] # Change this to the branches you want to run the workflow on
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x] # Specify the Node.js versions you want to test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.9.0"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
