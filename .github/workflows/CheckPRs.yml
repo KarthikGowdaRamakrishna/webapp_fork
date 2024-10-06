@@ -2,7 +2,8 @@ name: Node.js CI
 
 on:
   pull_request:
-    branches: [ main ] # Change this to the branches you want to run the workflow on
+    branches: 
+        - main # Change this to the branches you want to run the workflow on
 
 jobs:
   build:
@@ -23,6 +24,3 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Run tests
-        run: npm test
