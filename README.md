@@ -75,7 +75,7 @@ This repository uses **GitHub Actions** for Continuous Integration (CI). The CI 
 
 ### GitHub Actions Workflow
 
-The workflow configuration used in `.github/workflows/nodejs.yml`:
+The workflow configuration used in `.github/workflows/nodejs.yml`
 
 ### 6. Destroying the Infrastructure
 
