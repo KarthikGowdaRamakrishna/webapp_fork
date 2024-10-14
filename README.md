@@ -80,3 +80,16 @@ The workflow configuration used in `.github/workflows/nodejs.yml`
 ### 6. Destroying the Infrastructure
 
 After testing or deploying, you can clean up by stopping or removing any database resources or temporary files that may have been created during the test or deployment process.
+
+
+
+## Packer
+
+packer init ./packer/aws.pkr.hcl  
+
+packer build -var-file=./packer/dev.pkrvars.hcl ./packer/aws.pkr.hcl
+
+##### create EC2 instance with this AMI image and the following command to check postgres is comaptable in the created instance 
+
+sudo systemctl status postgresql
+psql --version
