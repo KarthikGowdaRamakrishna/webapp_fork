@@ -1,0 +1,59 @@
+name: Packer CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  packer_ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Zip all the webApp files
+      run: |
+        zip -r webapp.zip ./
+        pwd
+
+    - name: Install Packer
+      run: |
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update && sudo apt-get install packer
+
+    - name: Initialize Packer
+      run: packer init ./packer/aws.pkr.hcl
+  
+    - name: Format Packer template
+      run: |
+        packer fmt -check -diff ./packer
+        if [ $? -ne 0 ]; then
+          echo "Packer templates need formatting. Run 'packer fmt' locally and push the changes."
+          exit 1
+        fi
+
+    - name: Validate Packer template
+      env:
+        AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
+        AWS_SUBNET_ID: ${{ secrets.AWS_SUBNET_ID }}
+        AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
+        AWS_SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
+        AWS_AMI_NAME: ${{ secrets.AWS_AMI_NAME }}
+        VOLUME_SIZE: ${{ secrets.VOLUME_SIZE }}
+      run: |
+        packer validate -var "aws_vpc_id=${AWS_VPC_ID}" \
+                        -var "aws_subnet_id=${AWS_SUBNET_ID}" \
+                        -var "aws_profile=${AWS_PROFILE}" \
+                        -var "aws_region=${AWS_REGION}" \
+                        -var "aws_instance_type=${AWS_INSTANCE_TYPE}" \
+                        -var "aws_source_ami=${AWS_SOURCE_AMI}" \
+                        -var "aws_ami_name=${AWS_AMI_NAME}" \
+                        -var "volume_size=${VOLUME_SIZE}" ./packer/aws.pkr.hcl
+        if [ $? -ne 0 ]; then
+          echo "Packer template validation failed. Please fix the errors and push the changes."
+          exit 1
+        fi
