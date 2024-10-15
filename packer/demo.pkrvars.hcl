@@ -1,8 +1,0 @@
-aws_region = "us-east-2"
-vpc_id = "vpc-0514259e9d4f1c729"
-subnet_id = "subnet-0199f54dde59f5704"
-db_username = "postgres"
-db_password = "postgres"
-instance_type = "t2.micro"
-aws_profile = "demo" 
-source_ami = "ami-0fff1b9a61dec8a5f"
