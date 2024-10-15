@@ -1,0 +1,118 @@
+name: Build and Deploy Custom Image on PR Merge
+
+on:
+  pull_request:
+    types:
+      - closed  # Trigger only when the pull request is closed
+
+jobs:
+  build_and_test:
+    name: Zip and Upload Web Application & Create Custom AMI
+    if: github.event.pull_request.merged == true  # Run only if the PR was merged
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x]  # Define the Node.js versions you want to test on
+
+    steps:
+    # Step 1: Check out the code
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Node.js version (from matrix)
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # Step 4: Install PostgreSQL
+    - name: Install PostgreSQL
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql postgresql-contrib
+
+    # Step 5: Set up PostgreSQL (create user, database, and grant privileges)
+    - name: Set up PostgreSQL
+      env:
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        sudo service postgresql start
+        sudo -u postgres psql -c "CREATE USER \"$DB_USER\" WITH PASSWORD '$DB_PASSWORD';"
+        sudo -u postgres psql -c "CREATE DATABASE \"$DB_NAME\";"
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$DB_NAME\" TO \"$DB_USER\";"
+
+    # Step 6: Set environment variables for the application
+    - name: Set environment variables for the application
+      run: |
+        echo "DB_HOST=localhost" >> $GITHUB_ENV
+        echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+        echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+        echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
+        echo "PORT=${{ secrets.PORT }}" >> $GITHUB_ENV
+
+    # Step 7: Run the tests
+    - name: Run tests
+      env:
+        DB_HOST: localhost
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        PORT: ${{ secrets.PORT }}
+      run: npm test
+
+    # Step 8: Zip the entire repository
+    - name: Zip application code
+      run: |
+        zip -r webapp.zip .
+
+    # Step 9: Upload artifact (optional)
+    - name: Upload webapp artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: webapp.zip
+        path: webapp.zip
+
+    # Step 10: Install Packer
+    - name: Install Packer
+      run: |
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update && sudo apt-get install -y packer
+
+    # Step 11: Initialize Packer
+    - name: Initialize Packer
+      run: |
+        packer init ./packer/aws.pkr.hcl
+
+    # Step 12: Build Custom Image with Packer
+    - name: Build Custom Image
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
+        AWS_SUBNET_ID: ${{ secrets.AWS_SUBNET_ID }}
+        AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
+        AWS_SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
+        AWS_AMI_NAME: ${{ secrets.AWS_AMI_NAME }}
+        VOLUME_SIZE: ${{ secrets.VOLUME_SIZE }}
+      run: |
+        packer build -var "aws_access_key=${AWS_ACCESS_KEY_ID}" \
+                     -var "aws_secret_key=${AWS_SECRET_ACCESS_KEY}" \
+                     -var "aws_vpc_id=${AWS_VPC_ID}" \
+                     -var "aws_subnet_id=${AWS_SUBNET_ID}" \
+                     -var "aws_profile=${AWS_PROFILE}" \
+                     -var "aws_region=${AWS_REGION}" \
+                     -var "aws_instance_type=${AWS_INSTANCE_TYPE}" \
+                     -var "aws_source_ami=${AWS_SOURCE_AMI}" \
+                     -var "aws_ami_name=${AWS_AMI_NAME}" \
+                     -var "volume_size=${VOLUME_SIZE}" ./packer/aws.pkr.hcl
