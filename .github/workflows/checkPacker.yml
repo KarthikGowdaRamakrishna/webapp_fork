@@ -23,9 +23,12 @@ jobs:
         sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
         sudo apt-get update && sudo apt-get install packer
 
+    - name: Initialize Packer
+      run: packer init ./packer/aws.pkr.hcl
+  
     - name: Format Packer template
       run: |
-        packer fmt -check -diff .
+        packer fmt -check -diff ./packer
         if [ $? -ne 0 ]; then
           echo "Packer templates need formatting. Run 'packer fmt' locally and push the changes."
           exit 1
