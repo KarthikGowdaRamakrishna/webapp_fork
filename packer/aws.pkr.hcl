@@ -49,11 +49,6 @@ variable "volume_size" {
   type        = number
 }
 
-variable "artifact_path" {
-  description = "Path to the application artifact (e.g., webapp.zip) to be copied into the AMI"
-  type        = string
-  default     = "/tmp/artifact/webapp.zip" # Default path, can be overridden
-}
 
 # Source block for AWS AMI creation
 source "amazon-ebs" "ubuntu" {
@@ -115,8 +110,8 @@ build {
 
   # Step 3: Copy the application artifact into the image
   provisioner "file" {
-    source      = var.artifact_path
-    destination = "/opt/webapp/webapp.zip" # Destination on the AMI
+    source      = "./webapp.zip"
+    destination = "/tmp/webapp.zip"
   }
 
   # Step 4: Extract the application artifact, set ownership, and install dependencies
