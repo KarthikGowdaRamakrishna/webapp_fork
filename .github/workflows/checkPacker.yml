@@ -13,13 +13,30 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
-    # Step 2: Zip the application files before validation
+    # Step 2: Install Packer
+    - name: Install Packer
+      run: |
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update && sudo apt-get install -y packer
+
+    # Step 3: Initialize Packer
+    - name: Initialize Packer
+      run: |
+        packer init ./packer/aws.pkr.hcl
+
+    # Step 4: Format Packer template
+    - name: Format Packer template
+      run: |
+        packer fmt ./packer/aws.pkr.hcl
+
+    # Step 5: Zip the application files before validation
     - name: Zip all the webApp files
       run: |
         zip -r webapp.zip ./
         pwd
 
-    # Step 3: Validate Packer template (after zip is created)
+    # Step 6: Validate Packer template
     - name: Validate Packer template
       env:
         AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
