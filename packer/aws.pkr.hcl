@@ -89,12 +89,10 @@ build {
     inline = [
       "sudo apt-get update",
       "sudo apt-get install -y wget ca-certificates",
-      # Add PostgreSQL repository and install PostgreSQL
       "wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -",
       "sudo sh -c 'echo \"deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'",
       "sudo apt-get update",
       "sudo apt-get install -y postgresql postgresql-contrib",
-      # Enable and start PostgreSQL service
       "sudo systemctl enable postgresql",
       "sudo systemctl start postgresql"
     ]
@@ -117,20 +115,24 @@ build {
   # Step 4: Extract the application artifact, set ownership, and install dependencies
   provisioner "shell" {
     inline = [
-      "sudo apt-get update",
-      "sudo apt-get install unzip",
+      "export DEBIAN_FRONTEND=noninteractive",
+      "sudo apt-get clean",
+      "sudo apt remove git -y",
+      "sudo apt-get upgrade -y",
+      "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -",
+      "sudo apt install -y nodejs=16.15.0-1nodesource1",
+      "sudo apt-get install -y unzip",
       "sudo mkdir -p /opt/webapp",
       "sudo unzip /opt/webapp/webapp.zip -d /opt/webapp",
-      "sudo chown -R csye6225:csye6225 /opt/webapp", # Set ownership to csye6225 user and group
-      "sudo rm /opt/webapp/webapp.zip",              # Remove the zip after extraction
-      # Install any required dependencies
-      "cd /opt/webapp && sudo -u csye6225 npm install" # Adjust if your app uses different dependencies
+      "sudo chown -R csye6225:csye6225 /opt/webapp", 
+      "sudo rm /opt/webapp/webapp.zip",          
+      "cd /opt/webapp && sudo -u csye6225 npm install" 
     ]
   }
 
   # Step 5: Copy the systemd service file to /etc/systemd/system
   provisioner "file" {
-    source      = "./packer/csye6225.service" # Path to your systemd service file
+    source      = "./packer/csye6225.service" 
     destination = "/etc/systemd/system/csye6225.service"
   }
 
