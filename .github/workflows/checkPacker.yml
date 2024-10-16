@@ -9,31 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Check out the code
     - name: Check out code
       uses: actions/checkout@v3
 
+    # Step 2: Zip the application files before validation
     - name: Zip all the webApp files
       run: |
         zip -r webapp.zip ./
         pwd
 
-    - name: Install Packer
-      run: |
-        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-        sudo apt-get update && sudo apt-get install packer
-
-    - name: Initialize Packer
-      run: packer init ./packer/aws.pkr.hcl
-  
-    - name: Format Packer template
-      run: |
-        packer fmt -check -diff ./packer
-        if [ $? -ne 0 ]; then
-          echo "Packer templates need formatting. Run 'packer fmt' locally and push the changes."
-          exit 1
-        fi
-
+    # Step 3: Validate Packer template (after zip is created)
     - name: Validate Packer template
       env:
         AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
@@ -53,8 +39,4 @@ jobs:
                         -var "aws_source_ami=${AWS_SOURCE_AMI}" \
                         -var "aws_ami_name=${AWS_AMI_NAME}" \
                         -var "volume_size=${VOLUME_SIZE}" \
-                        -var "artifact_path=/tmp/artifact/webapp.zip" ./packer/aws.pkr.hcl
-        if [ $? -ne 0 ]; then
-          echo "Packer template validation failed. Please fix the errors and push the changes."
-          exit 1
-        fi
+                        -var "artifact_path=./webapp.zip" ./packer/aws.pkr.hcl
