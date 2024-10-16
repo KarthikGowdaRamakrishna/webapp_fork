@@ -128,7 +128,7 @@ build {
 
   # Step 5: Copy the systemd service file to /etc/systemd/system
   provisioner "file" {
-    source      = "./csye6225.service" # Path to your systemd service file
+    source      = "./packer/csye6225.service" # Path to your systemd service file
     destination = "/etc/systemd/system/csye6225.service"
   }
 
