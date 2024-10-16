@@ -83,6 +83,7 @@ jobs:
         curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
         sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
         sudo apt-get update && sudo apt-get install -y packer
+
     # Step 11: AWS configure
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -100,8 +101,6 @@ jobs:
     # Step 13: Build Custom Image with Packer
     - name: Build Custom Image
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
         AWS_SUBNET_ID: ${{ secrets.AWS_SUBNET_ID }}
         AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
@@ -111,9 +110,7 @@ jobs:
         AWS_AMI_NAME: ${{ secrets.AWS_AMI_NAME }}
         VOLUME_SIZE: ${{ secrets.VOLUME_SIZE }}
       run: |
-        packer build -var "aws_access_key=${AWS_ACCESS_KEY_ID}" \
-                     -var "aws_secret_key=${AWS_SECRET_ACCESS_KEY}" \
-                     -var "aws_vpc_id=${AWS_VPC_ID}" \
+        packer build -var "aws_vpc_id=${AWS_VPC_ID}" \
                      -var "aws_subnet_id=${AWS_SUBNET_ID}" \
                      -var "aws_profile=${AWS_PROFILE}" \
                      -var "aws_region=${AWS_REGION}" \

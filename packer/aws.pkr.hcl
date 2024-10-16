@@ -8,8 +8,8 @@ packer {
     }
   }
 }
-
 # Variable definitions
+
 variable "aws_profile" {
   type = string
 }
