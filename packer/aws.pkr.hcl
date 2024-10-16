@@ -117,6 +117,8 @@ build {
   # Step 4: Extract the application artifact, set ownership, and install dependencies
   provisioner "shell" {
     inline = [
+      "sudo apt-get update",
+      "sudo apt-get install unzip",
       "sudo mkdir -p /opt/webapp",
       "sudo unzip /opt/webapp/webapp.zip -d /opt/webapp",
       "sudo chown -R csye6225:csye6225 /opt/webapp", # Set ownership to csye6225 user and group
