@@ -10,9 +10,6 @@ jobs:
     name: Zip and Upload Web Application & Create Custom AMI
     if: github.event.pull_request.merged == true  # Run only if the PR was merged
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [15.x, 16.x] 
 
     steps:
     # Step 1: Check out the code
@@ -20,10 +17,10 @@ jobs:
       uses: actions/checkout@v3
 
     # Step 2: Set up Node.js version (from matrix)
-    - name: Set up Node.js ${{ matrix.node-version }}
+    - name: Set up Node.js environment
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
+       node-version: "16"
 
     # Step 3: Install dependencies
     - name: Install dependencies
@@ -86,13 +83,21 @@ jobs:
         curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
         sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
         sudo apt-get update && sudo apt-get install -y packer
+    # Step 11: AWS configure
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+ 
 
-    # Step 11: Initialize Packer
+    # Step 12: Initialize Packer
     - name: Initialize Packer
       run: |
         packer init ./packer/aws.pkr.hcl
 
-    # Step 12: Build Custom Image with Packer
+    # Step 13: Build Custom Image with Packer
     - name: Build Custom Image
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
