@@ -120,5 +120,5 @@ jobs:
                      -var "aws_instance_type=${AWS_INSTANCE_TYPE}" \
                      -var "aws_source_ami=${AWS_SOURCE_AMI}" \
                      -var "aws_ami_name=${AWS_AMI_NAME}" \
-                     -var "volume_size=${VOLUME_SIZE}" \ 
+                     -var "volume_size=${VOLUME_SIZE}" \
                      ./packer/aws.pkr.hcl
