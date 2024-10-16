@@ -115,7 +115,7 @@ build {
   # Step 3: Copy the application artifact into the image
   provisioner "file" {
     source      = var.artifact_path
-    destination = "/opt/webapp/webapp.zip"  # Destination on the AMI
+    destination = "/opt/webapp/webapp.zip" # Destination on the AMI
   }
 
   # Step 4: Extract the application artifact, set ownership, and install dependencies
@@ -123,16 +123,16 @@ build {
     inline = [
       "sudo mkdir -p /opt/webapp",
       "sudo unzip /opt/webapp/webapp.zip -d /opt/webapp",
-      "sudo chown -R csye6225:csye6225 /opt/webapp",  # Set ownership to csye6225 user and group
-      "sudo rm /opt/webapp/webapp.zip",  # Remove the zip after extraction
+      "sudo chown -R csye6225:csye6225 /opt/webapp", # Set ownership to csye6225 user and group
+      "sudo rm /opt/webapp/webapp.zip",              # Remove the zip after extraction
       # Install any required dependencies
-      "cd /opt/webapp && sudo -u csye6225 npm install"  # Adjust if your app uses different dependencies
+      "cd /opt/webapp && sudo -u csye6225 npm install" # Adjust if your app uses different dependencies
     ]
   }
 
   # Step 5: Copy the systemd service file to /etc/systemd/system
   provisioner "file" {
-    source      = "./myapp.service"  # Path to your systemd service file
+    source      = "./myapp.service" # Path to your systemd service file
     destination = "/etc/systemd/system/myapp.service"
   }
 
