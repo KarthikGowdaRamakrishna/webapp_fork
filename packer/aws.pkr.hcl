@@ -52,6 +52,7 @@ variable "volume_size" {
 variable "artifact_path" {
   description = "Path to the application artifact (e.g., webapp.zip) to be copied into the AMI"
   type        = string
+  default     = "/tmp/artifact/webapp.zip" # Default path, can be overridden
 }
 
 # Source block for AWS AMI creation
