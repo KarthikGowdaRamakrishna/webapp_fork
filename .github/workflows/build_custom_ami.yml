@@ -3,7 +3,7 @@ name: Build and Deploy Custom Image on PR Merge
 on:
   pull_request:
     types:
-      - closed  # Trigger only when the pull request is closed
+      - closed
 
 jobs:
   build_and_test:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14.x, 16.x]  # Define the Node.js versions you want to test on
+        node-version: [15.x, 16.x] 
 
     steps:
     # Step 1: Check out the code
@@ -115,4 +115,5 @@ jobs:
                      -var "aws_instance_type=${AWS_INSTANCE_TYPE}" \
                      -var "aws_source_ami=${AWS_SOURCE_AMI}" \
                      -var "aws_ami_name=${AWS_AMI_NAME}" \
-                     -var "volume_size=${VOLUME_SIZE}" ./packer/aws.pkr.hcl
+                     -var "volume_size=${VOLUME_SIZE}" \
+                     -var "artifact_path=./webapp.zip" ./packer/aws.pkr.hcl
