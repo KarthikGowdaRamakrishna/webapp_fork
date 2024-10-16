@@ -3,8 +3,7 @@ name: Build and Deploy Custom Image on PR Merge
 on:
   pull_request:
     types:
-      - closed  # Trigger only when the pull request is closed
-
+      - closed 
 jobs:
   build_and_test:
     name: Zip and Upload Web Application & Create Custom AMI
@@ -12,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14.x, 16.x]  # Define the Node.js versions you want to test on
+        node-version: [15.x, 16.x] 
 
     steps:
     # Step 1: Check out the code

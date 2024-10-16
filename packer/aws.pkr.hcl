@@ -49,6 +49,11 @@ variable "volume_size" {
   type        = number
 }
 
+variable "artifact_path" {
+  description = "Path to the application artifact (e.g., webapp.zip) to be copied into the AMI"
+  type        = string
+}
+
 # Source block for AWS AMI creation
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile
@@ -79,10 +84,11 @@ source "amazon-ebs" "ubuntu" {
   }
 }
 
-# Build block with provisioners for setting up PostgreSQL
+# Build block with provisioners for setting up PostgreSQL, creating a user, copying artifacts, and setting up the systemd service
 build {
   sources = ["source.amazon-ebs.ubuntu"]
 
+  # Step 1: Install PostgreSQL
   provisioner "shell" {
     inline = [
       "sudo apt-get update",
@@ -95,6 +101,47 @@ build {
       # Enable and start PostgreSQL service
       "sudo systemctl enable postgresql",
       "sudo systemctl start postgresql"
+    ]
+  }
+
+  # Step 2: Create a non-login user and group
+  provisioner "shell" {
+    inline = [
+      "sudo groupadd -r csye6225",
+      "sudo useradd -r -g csye6225 -s /usr/sbin/nologin csye6225"
+    ]
+  }
+
+  # Step 3: Copy the application artifact into the image
+  provisioner "file" {
+    source      = var.artifact_path
+    destination = "/opt/webapp/webapp.zip"  # Destination on the AMI
+  }
+
+  # Step 4: Extract the application artifact, set ownership, and install dependencies
+  provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /opt/webapp",
+      "sudo unzip /opt/webapp/webapp.zip -d /opt/webapp",
+      "sudo chown -R csye6225:csye6225 /opt/webapp",  # Set ownership to csye6225 user and group
+      "sudo rm /opt/webapp/webapp.zip",  # Remove the zip after extraction
+      # Install any required dependencies
+      "cd /opt/webapp && sudo -u csye6225 npm install"  # Adjust if your app uses different dependencies
+    ]
+  }
+
+  # Step 5: Copy the systemd service file to /etc/systemd/system
+  provisioner "file" {
+    source      = "./myapp.service"  # Path to your systemd service file
+    destination = "/etc/systemd/system/myapp.service"
+  }
+
+  # Step 6: Enable the service and reload the systemd daemon
+  provisioner "shell" {
+    inline = [
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable myapp",
+      "sudo systemctl start myapp"
     ]
   }
 }
