@@ -119,8 +119,8 @@ build {
       "sudo apt-get clean",
       "sudo apt remove git -y",
       "sudo apt-get upgrade -y",
-      "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-sudo apt install -y nodejs=16.15.0-1nodesource1",
+      "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -",
+      "sudo apt install -y nodejs=16.15.0-1nodesource1",
       "sudo apt-get install -y unzip",
       "sudo mkdir -p /opt/webapp",
       "sudo unzip /opt/webapp/webapp.zip -d /opt/webapp",
