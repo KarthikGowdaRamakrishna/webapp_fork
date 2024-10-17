@@ -22,7 +22,7 @@ jobs:
       with:
        node-version: "16"
 
-   # Step 8: Zip the entire repository
+   
     - name: Zip application code
       run: |
         zip -r webapp.zip .
