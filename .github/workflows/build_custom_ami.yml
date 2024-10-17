@@ -22,12 +22,14 @@ jobs:
       with:
        node-version: "16"
 
-   # Step 8: Zip the entire repository
+   
     - name: Zip application code
       run: |
         zip -r webapp.zip .
 
-
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
 
     # Step 4: Install PostgreSQL
     - name: Install PostgreSQL
