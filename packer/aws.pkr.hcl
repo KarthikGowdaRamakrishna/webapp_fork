@@ -139,9 +139,9 @@ build {
   provisioner "shell" {
     inline = [
       "sudo apt-get install -y unzip",
-      "sudo mkdir -p /opt/applications/web_app", # Changed directory name
-      "sudo unzip /tmp/webapp.zip -d /opt/applications/web_app",
-      "sudo chown -R csye6225:csye6225 /opt/applications/web_app",
+      "sudo mkdir -p /opt/webapp", # Changed directory name
+      "sudo unzip /tmp/webapp.zip -d /opt/webapp",
+      "sudo chown -R csye6225:csye6225 /opt/webapp",
       "sudo systemctl start csye6225.service",
       "sudo systemctl enable csye6225.service"
     ]
