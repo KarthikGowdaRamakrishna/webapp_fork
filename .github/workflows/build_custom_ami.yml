@@ -21,11 +21,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: "16"
-    
-    - name: Zip application code
-      run: |
-        zip -r webapp.zip .
-
 
     # Step 3: Install dependencies
     - name: Install dependencies
@@ -82,6 +77,9 @@ jobs:
         PORT: ${{ secrets.PORT }}
       run: npm test
 
+    - name: Zip application code
+      run: |
+        zip -r webapp.zip .
 
     #
     - name: Upload webapp artifact
