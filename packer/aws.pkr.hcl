@@ -123,7 +123,7 @@ build {
       "sudo apt install -y nodejs=16.15.0-1nodesource1",
       "sudo apt-get install -y unzip",
       "sudo mkdir -p /opt/webapp",
-      "sudo unzip /opt/webapp/webapp.zip -d /opt/webapp",
+      "sudo unzip /tmp/webapp/webapp -d /opt/webapp",
       "sudo chown -R csye6225:csye6225 /opt/webapp", 
       "sudo rm /opt/webapp/webapp.zip",          
       "cd /opt/webapp && sudo -u csye6225 npm install" 
