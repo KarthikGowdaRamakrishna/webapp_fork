@@ -1,6 +1,4 @@
 packer {
-  required_version = ">= 1.5.0"
-
   required_plugins {
     amazon = {
       version = ">= 1.0.0"
@@ -8,8 +6,8 @@ packer {
     }
   }
 }
-# Variable definitions
 
+# Define variables
 variable "aws_profile" {
   type = string
 }
@@ -29,11 +27,6 @@ variable "aws_source_ami" {
   type        = string
 }
 
-variable "aws_ami_name" {
-  description = "Name of the AMI to create"
-  type        = string
-}
-
 variable "aws_vpc_id" {
   description = "VPC ID where the build instance will run"
   type        = string
@@ -49,20 +42,19 @@ variable "volume_size" {
   type        = number
 }
 
-
-# Source block for AWS AMI creation
+# Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile
   region        = var.aws_region
-  ami_name      = var.aws_ami_name
+  ami_name      = "ubuntu-24.04-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
   instance_type = var.aws_instance_type
   vpc_id        = var.aws_vpc_id
   subnet_id     = var.aws_subnet_id
 
-  # Use the latest Ubuntu 22.04 LTS AMI
+  # Use the latest Ubuntu 24.04 LTS AMI
   source_ami_filter {
     filters = {
-      name                = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
+      name                = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
       root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
@@ -80,17 +72,62 @@ source "amazon-ebs" "ubuntu" {
   }
 }
 
-# Build block with provisioners for setting up PostgreSQL, creating a user, copying artifacts, and setting up the systemd service
+# Build section with provisioners
 build {
-  sources = ["source.amazon-ebs.ubuntu"]
+  sources = [
+    "source.amazon-ebs.ubuntu"
+  ]
 
-  # Step 1: Install PostgreSQL
+  # Check if webapp.zip exists before provisioning
+  provisioner "file" {
+    source      = "./webapp.zip"
+    destination = "/tmp/webapp.zip"
+  }
+
+  # Provision the systemd service file
+  provisioner "file" {
+    source      = "./packer/csye6225.service"
+    destination = "/tmp/csye6225.service"
+  }
+
+  # Use sudo to move the service file to systemd directory and reload systemd daemon
   provisioner "shell" {
     inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y wget ca-certificates",
+      "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable csye6225.service"
+    ]
+  }
+
+  # Update and upgrade the OS
+  provisioner "shell" {
+    inline = [
+      "sudo apt-get update -y",
+      "sudo apt-get upgrade -y"
+    ]
+  }
+
+  # Create user and group for the application
+  provisioner "shell" {
+    inline = [
+      "if ! getent group csye6225 > /dev/null 2>&1; then sudo groupadd csye6225; fi",
+      "if ! id -u csye6225 > /dev/null 2>&1; then sudo useradd -m -g csye6225 csye6225; fi"
+    ]
+  }
+
+  # Install Node.js and npm
+  provisioner "shell" {
+    inline = [
+      "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -",
+      "sudo apt-get install -y nodejs"
+    ]
+  }
+
+  # Add PostgreSQL APT repository and install PostgreSQL
+  provisioner "shell" {
+    inline = [
+      "sudo sh -c 'echo \"deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'",
       "wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -",
-      "sudo sh -c 'echo \"deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'",
       "sudo apt-get update",
       "sudo apt-get install -y postgresql postgresql-contrib",
       "sudo systemctl enable postgresql",
@@ -98,50 +135,15 @@ build {
     ]
   }
 
-  # Step 2: Create a non-login user and group
+  # Set up and start the web application
   provisioner "shell" {
     inline = [
-      "sudo groupadd -r csye6225",
-      "sudo useradd -r -g csye6225 -s /usr/sbin/nologin csye6225"
-    ]
-  }
-
-  # Step 3: Copy the application artifact into the image
-  provisioner "file" {
-    source      = "./webapp.zip"
-    destination = "/tmp/webapp.zip"
-  }
-
-  # Step 4: Extract the application artifact, set ownership, and install dependencies
-  provisioner "shell" {
-    inline = [
-      "export DEBIAN_FRONTEND=noninteractive",
-      "sudo apt-get clean",
-      "sudo apt remove git -y",
-      "sudo apt-get upgrade -y",
-      "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -",
-      "sudo apt install -y nodejs=16.15.0-1nodesource1",
       "sudo apt-get install -y unzip",
-      "sudo mkdir -p /opt/webapp",
-      "sudo unzip /tmp/webapp.zip -d /opt/webapp",
-      "sudo chown -R csye6225:csye6225 /opt/webapp", 
-      "sudo rm /opt/webapp.zip",          
-      "cd /opt/webapp && sudo -u csye6225 npm install" 
-    ]
-  }
-
-  # Step 5: Copy the systemd service file to /etc/systemd/system
-  provisioner "file" {
-    source      = "./packer/csye6225.service" 
-    destination = "/etc/systemd/system/csye6225.service"
-  }
-
-  # Step 6: Enable the service and reload the systemd daemon
-  provisioner "shell" {
-    inline = [
-      "sudo systemctl daemon-reload",
-      "sudo systemctl enable csye6225",
-      "sudo systemctl start csye6225"
+      "sudo mkdir -p /opt/applications/web_app", # Changed directory name
+      "sudo unzip /tmp/webapp.zip -d /opt/applications/web_app",
+      "sudo chown -R csye6225:csye6225 /opt/applications/web_app",
+      "sudo systemctl start csye6225.service",
+      "sudo systemctl enable csye6225.service"
     ]
   }
 }
