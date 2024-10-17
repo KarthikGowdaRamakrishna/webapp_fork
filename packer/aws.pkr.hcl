@@ -7,7 +7,7 @@ packer {
   }
 }
 
-# Define variables
+# Define variables for AWS and database configurations
 variable "aws_profile" {
   type = string
 }
@@ -40,6 +40,23 @@ variable "aws_subnet_id" {
 variable "volume_size" {
   description = "Size of the root volume in GB"
   type        = number
+}
+
+# Database configuration variables (from secrets)
+variable "DB_USER" {
+  type = string
+}
+
+variable "DB_PASSWORD" {
+  type = string
+}
+
+variable "DB_NAME" {
+  type = string
+}
+
+variable "DB_PORT" {
+  type = string
 }
 
 # Define the source for AWS Amazon AMI
@@ -78,19 +95,19 @@ build {
     "source.amazon-ebs.ubuntu"
   ]
 
-  # Check if webapp.zip exists before provisioning
+  # Upload webapp.zip
   provisioner "file" {
     source      = "./webapp.zip"
     destination = "/tmp/webapp.zip"
   }
 
-  # Provision the systemd service file
+  # Provision systemd service file
   provisioner "file" {
     source      = "./packer/csye6225.service"
     destination = "/tmp/csye6225.service"
   }
 
-  # Use sudo to move the service file to systemd directory and reload systemd daemon
+  # Move service file and reload systemd daemon
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
@@ -99,61 +116,56 @@ build {
     ]
   }
 
-  # Update and upgrade the OS
+  # Install Node.js, PostgreSQL, and unzip the webapp
   provisioner "shell" {
     inline = [
-      "sudo apt-get update -y",
-      "sudo apt-get upgrade -y"
-    ]
-  }
-
-  # Create user and group for the application
-  provisioner "shell" {
-    inline = [
-      "if ! getent group csye6225 > /dev/null 2>&1; then sudo groupadd csye6225; fi",
-      "if ! id -u csye6225 > /dev/null 2>&1; then sudo useradd -m -g csye6225 csye6225; fi"
-    ]
-  }
-
-  # Install Node.js and npm
-  provisioner "shell" {
-    inline = [
+      "sudo apt-get update -y && sudo apt-get upgrade -y",
       "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -",
-      "sudo apt-get install -y nodejs"
-    ]
-  }
-
-  # Add PostgreSQL APT repository and install PostgreSQL
-  provisioner "shell" {
-    inline = [
-      "sudo sh -c 'echo \"deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'",
-      "wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -",
-      "sudo apt-get update",
+      "sudo apt-get install -y nodejs",
       "sudo apt-get install -y postgresql postgresql-contrib",
       "sudo systemctl enable postgresql",
-      "sudo systemctl start postgresql"
+      "sudo systemctl start postgresql",
+      "sudo mkdir -p /opt/applications/webapp",
+      "sudo unzip /tmp/webapp.zip -d /opt/applications/webapp",
+      "sudo chown -R csye6225:csye6225 /opt/applications/webapp",
+      "sudo npm install --prefix /opt/applications/webapp"
     ]
   }
 
-  # Set up and start the web application
+  # Provision PostgreSQL configuration using environment variables
   provisioner "shell" {
     inline = [
-      "sudo apt-get install -y unzip",
-      "sudo mkdir -p /opt/applications/webapp", 
-      "sudo unzip /tmp/webapp.zip -d /opt/applications/webapp",
-      "cd /opt/applications/webapp",
-      "echo unzipping-1",
-      "sudo npm install",
-      "sudo chown -R csye6225:csye6225 /opt/applications/webapp",
-      "echo access-2",
-      "ls -la /opt/applications/webapp",
-      "echo listing donet",
-      "sudo systemctl enable csye6225.service",
-      "echo system enabling",
-      "sudo systemctl start csye6225.service",
-      "sudo systemctl status csye6225"
+      "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';\"",
+      "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};\""
+    ]
+  }
 
-      
+  # Transfer environment file from local machine to server
+  provisioner "file" {
+    source      = "./environment/development.env"
+    destination = "/tmp/development.env"
+  }
+
+  # Copy the environment file to the correct location
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/development.env /opt/applications/webapp/.env"
+    ]
+  }
+
+  # Move the environment file to the correct location
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/.env /opt/applications/webapp/.env",
+      "sudo chown csye6225:csye6225 /opt/applications/webapp/.env"
+    ]
+  }
+
+  # Start the Node.js service
+  provisioner "shell" {
+    inline = [
+      "sudo systemctl start csye6225.service",
+      "sudo systemctl status csye6225.service"
     ]
   }
 }

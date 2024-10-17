@@ -16,12 +16,11 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
-    # Step 2: Set up Node.js version (from matrix)
+    # Step 2: Set up Node.js version
     - name: Set up Node.js environment
       uses: actions/setup-node@v3
       with:
-       node-version: "16"
-
+        node-version: "16"
 
     # Step 3: Install dependencies
     - name: Install dependencies
@@ -45,17 +44,29 @@ jobs:
         sudo -u postgres psql -c "CREATE DATABASE \"$DB_NAME\";"
         sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$DB_NAME\" TO \"$DB_USER\";"
 
-    # Step 6: Set environment variables for the application
-    - name: Set environment variables for the application
+    # Step 6: Set up the environment file
+    - name: Setup Environment File
       run: |
-        echo "DB_HOST=localhost" >> $GITHUB_ENV
-        echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
-        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-        echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
-        echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
-        echo "PORT=${{ secrets.PORT }}" >> $GITHUB_ENV
+        mkdir -p ./environment
+        cat << EOF > ./environment/development.env
+        DB_USER=${{ secrets.DB_USER }}
+        DB_HOST=${{ secrets.DB_HOST }}
+        DB_NAME=${{ secrets.DB_NAME }}
+        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+        DB_PORT=${{ secrets.DB_PORT }}
+        PORT=${{ secrets.PORT }}
+        EOF
+      shell: bash
 
-    # Step 7: Run the tests
+    # Step 7: Check if environment file exists
+    - name: Check if environment file exists
+      run: ls -l ./environment/development.env
+
+    # Step 8: Show environment file content
+    - name: Show environment file content
+      run: cat ./environment/development.env
+
+    # Step 9: Run tests
     - name: Run tests
       env:
         DB_HOST: localhost
@@ -70,36 +81,34 @@ jobs:
       run: |
         zip -r webapp.zip .
 
-
-    # Step 9: Upload artifact (optional)
+    # Step 10: Upload artifact (optional)
     - name: Upload webapp artifact
       uses: actions/upload-artifact@v3
       with:
         name: webapp.zip
         path: webapp.zip
 
-    # Step 10: Install Packer
+    # Step 11: Install Packer
     - name: Install Packer
       run: |
         curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
         sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
         sudo apt-get update && sudo apt-get install -y packer
 
-    # Step 11: AWS configure
+    # Step 12: AWS configure
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
- 
 
-    # Step 12: Initialize Packer
+    # Step 13: Initialize Packer
     - name: Initialize Packer
       run: |
         packer init ./packer/aws.pkr.hcl
 
-    # Step 13: Build Custom Image with Packer
+    # Step 14: Build Custom Image with Packer
     - name: Build Custom Image
       env:
         AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
@@ -109,6 +118,10 @@ jobs:
         AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
         AWS_SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
         VOLUME_SIZE: ${{ secrets.VOLUME_SIZE }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PORT: ${{ secrets.DB_PORT }}
       run: |
         packer build -var "aws_vpc_id=${AWS_VPC_ID}" \
                      -var "aws_subnet_id=${AWS_SUBNET_ID}" \
@@ -117,4 +130,8 @@ jobs:
                      -var "aws_instance_type=${AWS_INSTANCE_TYPE}" \
                      -var "aws_source_ami=${AWS_SOURCE_AMI}" \
                      -var "volume_size=${VOLUME_SIZE}" \
+                     -var "DB_USER=${DB_USER}" \
+                     -var "DB_PASSWORD=${DB_PASSWORD}" \
+                     -var "DB_NAME=${DB_NAME}" \
+                     -var "DB_PORT=${DB_PORT}" \
                      ./packer/aws.pkr.hcl
