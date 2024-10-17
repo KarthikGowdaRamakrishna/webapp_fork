@@ -145,7 +145,7 @@ build {
       "sudo chown -R csye6225:csye6225 /opt/applications/webapp",
       "echo access-2",
       "ls -la /opt/applications/webapp",
-      "echo listing done",
+      "echo listing donet",
       "sudo systemctl enable csye6225.service",
       "echo system enabling",
       "sudo systemctl start csye6225.service",
