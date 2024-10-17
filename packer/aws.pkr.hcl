@@ -129,10 +129,10 @@ build {
       "sudo apt-get install -y postgresql postgresql-contrib",
       "sudo systemctl enable postgresql",
       "sudo systemctl start postgresql",
-      "sudo mkdir -p /opt/applications/webapp",
-      "sudo unzip /tmp/webapp.zip -d /opt/applications/webapp",
-      "sudo chown -R csye6225:csye6225 /opt/applications/webapp",
-      "sudo npm install --prefix /opt/applications/webapp"
+      "sudo mkdir -p /var/applications/webapp",
+      "sudo unzip /tmp/webapp.zip -d /var/applications/webapp",
+      "sudo chown -R csye6225:csye6225 /var/applications/webapp",
+      "sudo npm install --prefix /var/applications/webapp"
     ]
   }
 
@@ -153,15 +153,15 @@ build {
   # Copy the environment file to the correct location
   provisioner "shell" {
     inline = [
-      "sudo mv /tmp/development.env /opt/applications/webapp/.env"
+      "sudo mv /tmp/development.env /var/applications/webapp/.env"
     ]
   }
 
   # Move the environment file to the correct location
   provisioner "shell" {
     inline = [
-      "sudo mv /tmp/.env /opt/applications/webapp/.env",
-      "sudo chown csye6225:csye6225 /opt/applications/webapp/.env"
+      "sudo mv /tmp/.env /var/applications/webapp/.env",
+      "sudo chown csye6225:csye6225 /var/applications/webapp/.env"
     ]
   }
 
