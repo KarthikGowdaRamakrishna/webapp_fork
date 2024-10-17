@@ -1,15 +1,15 @@
 [Unit]
 Description=CSYE 6225 webapp
-ConditionPathExists=/opt/webapp/
+ConditionPathExists=/opt/applications/webapp/
 After=network.target
 
 [Service]
 Type=simple
 User=csye6225
 Group=csye6225
-WorkingDirectory=/opt/webapp
-ExecStartPre=/bin/bash -c '/bin/test -e /opt/webapp/development.env'
-ExecStart=/usr/bin/node /opt/webapp/index.js
+WorkingDirectory=/opt/applications/webapp
+ExecStartPre=/bin/bash -c '/bin/test -e /opt/applications/webapp/development.env'
+ExecStart=/usr/bin/node /opt/applications/webapp/server.js
 Restart=on-failure
 RestartSec=3
 StandardOutput=syslog
