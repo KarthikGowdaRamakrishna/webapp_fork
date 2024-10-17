@@ -107,7 +107,6 @@ jobs:
         AWS_REGION: ${{ secrets.AWS_REGION }}
         AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
         AWS_SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
-        AWS_AMI_NAME: ${{ secrets.AWS_AMI_NAME }}
         VOLUME_SIZE: ${{ secrets.VOLUME_SIZE }}
       run: |
         packer build -var "aws_vpc_id=${AWS_VPC_ID}" \
@@ -116,6 +115,5 @@ jobs:
                      -var "aws_region=${AWS_REGION}" \
                      -var "aws_instance_type=${AWS_INSTANCE_TYPE}" \
                      -var "aws_source_ami=${AWS_SOURCE_AMI}" \
-                     -var "aws_ami_name=${AWS_AMI_NAME}" \
                      -var "volume_size=${VOLUME_SIZE}" \
                      ./packer/aws.pkr.hcl
