@@ -125,7 +125,7 @@ build {
       "sudo mkdir -p /opt/webapp",
       "sudo unzip /tmp/webapp.zip -d /opt/webapp",
       "sudo chown -R csye6225:csye6225 /opt/webapp", 
-      "sudo rm /opt/webapp/webapp.zip",          
+      "sudo rm /opt/webapp.zip",          
       "cd /opt/webapp && sudo -u csye6225 npm install" 
     ]
   }
