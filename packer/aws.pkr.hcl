@@ -140,8 +140,9 @@ build {
     inline = [
       "sudo apt-get install -y unzip",
       "sudo mkdir -p /opt/webapp", # Changed directory name
-      "sudo unzip /tmp/webapp.zip -d /opt/webapp",
-      "sudo chown -R csye6225:csye6225 /opt/webapp",
+      "sudo unzip /tmp/webapp.zip -d /opt/applications/webapp",
+      "sudo chown -R csye6225:csye6225 /opt/applications/webapp",
+      "ls -la /opt/applications/webapp",
       "sudo systemctl start csye6225.service",
       "sudo systemctl enable csye6225.service"
     ]
