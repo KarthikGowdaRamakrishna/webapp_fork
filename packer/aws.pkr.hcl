@@ -149,7 +149,6 @@ build {
       "sudo systemctl enable csye6225.service",
       "echo system enabling",
       "sudo systemctl start csye6225.service",
-      "echo System staring",
       "sudo systemctl status csye6225"
 
       
