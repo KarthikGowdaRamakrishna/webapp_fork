@@ -141,9 +141,13 @@ build {
       "sudo apt-get install -y unzip",
       "sudo mkdir -p /opt/webapp", # Changed directory name
       "sudo unzip /tmp/webapp.zip -d /opt/applications/webapp",
+      "echo unzipping-1",
       "sudo chown -R csye6225:csye6225 /opt/applications/webapp",
+      "echo access-2",
       "ls -la /opt/applications/webapp",
+      "echo listing done",
       "sudo systemctl enable csye6225.service",
+      "echo system enabling",
       "sudo systemctl start csye6225.service",
       "sudo systemctl status csye6225"
 

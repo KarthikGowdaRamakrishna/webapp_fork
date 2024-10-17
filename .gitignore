@@ -137,5 +137,5 @@ dist
 
 #for pkvar env variables
 *.pkrvars.hcl
-
+.zip
 .DS_Store
