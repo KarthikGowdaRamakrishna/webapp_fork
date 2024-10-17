@@ -20,7 +20,7 @@ jobs:
         sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
         sudo apt-get update && sudo apt-get install -y packer
     
-     # Step 6: Set up the environment file
+     # Step 2.5: Set up the environment file for enironment variables
     - name: Setup Environment File
       run: |
         mkdir -p ./environment
