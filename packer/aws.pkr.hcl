@@ -20,6 +20,7 @@ variable "aws_region" {
 variable "aws_instance_type" {
   description = "Instance type to use for building the AMI"
   type        = string
+  default = "t2.small"
 }
 
 variable "aws_source_ami" {
@@ -119,6 +120,8 @@ build {
   # Install Node.js, PostgreSQL, and unzip the webapp
   provisioner "shell" {
     inline = [
+      "export DEBIAN_FRONTEND=noninteractive",
+      "sudo apt-get clean",
       "sudo apt-get update -y && sudo apt-get upgrade -y",
       "sudo apt-get install -y unzip",
       "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -",
