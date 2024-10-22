@@ -20,7 +20,6 @@ variable "aws_region" {
 variable "aws_instance_type" {
   description = "Instance type to use for building the AMI"
   type        = string
-  default = "t2.small"
 }
 
 variable "aws_source_ami" {
@@ -31,6 +30,7 @@ variable "aws_source_ami" {
 variable "aws_vpc_id" {
   description = "VPC ID where the build instance will run"
   type        = string
+
 }
 
 variable "aws_subnet_id" {
@@ -108,9 +108,16 @@ build {
     destination = "/tmp/csye6225.service"
   }
 
+  provisioner "file" {
+    source      = ".env"
+    destination = "/tmp/.env"
+  }
+
+
   # Move service file and reload systemd daemon
   provisioner "shell" {
     inline = [
+      "set -e",
       "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable csye6225.service"
@@ -126,13 +133,17 @@ build {
       "sudo apt-get install -y unzip",
       "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -",
       "sudo apt-get install -y nodejs",
+      "sudo groupadd csye6225",
+      "sudo useradd -s /usr/sbin/nologin -g csye6225 -d /var/csye6225 -m csye6225",
       "sudo apt-get install -y postgresql postgresql-contrib",
       "sudo systemctl enable postgresql",
       "sudo systemctl start postgresql",
       "sudo mkdir -p /var/applications/webapp",
+      "echo test1",
       "sudo unzip /tmp/webapp.zip -d /var/applications/webapp",
       "sudo chown -R csye6225:csye6225 /var/applications/webapp",
-      "sudo npm install --prefix /var/applications/webapp"
+      "echo test2",
+      "sudo npm install --prefix /var/applications/webapp/"
     ]
   }
 
@@ -144,16 +155,16 @@ build {
     ]
   }
 
-  # Transfer environment file from local machine to server
+  #Transfer environment file from local machine to server
   provisioner "file" {
-    source      = "./environment/development.env"
-    destination = "/tmp/development.env"
+    source      = ".env"
+    destination = "/tmp/.env"
   }
 
   # Copy the environment file to the correct location
   provisioner "shell" {
     inline = [
-      "sudo mv /tmp/development.env /var/applications/webapp/.env"
+      "sudo mv /tmp/.env /var/applications/webapp/.env"
     ]
   }
 

@@ -21,6 +21,10 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: "16"
+ 
+    - name: Zip application code
+      run: |
+        zip -r webapp.zip .
 
     # Step 3: Install dependencies
     - name: Install dependencies
@@ -47,8 +51,7 @@ jobs:
     # Step 6: Set up the environment file
     - name: Setup Environment File
       run: |
-        mkdir -p ./environment
-        cat << EOF > ./environment/development.env
+        cat << EOF > .env
         DB_USER=${{ secrets.DB_USER }}
         DB_HOST=${{ secrets.DB_HOST }}
         DB_NAME=${{ secrets.DB_NAME }}
@@ -60,11 +63,11 @@ jobs:
 
     # Step 7: Check if environment file exists
     - name: Check if environment file exists
-      run: ls -l ./environment/development.env
+      run: ls -l ./.env
 
     # Step 8: Show environment file content
     - name: Show environment file content
-      run: cat ./environment/development.env
+      run: cat .env
 
     # Step 9: Run tests
     - name: Run tests
@@ -77,9 +80,6 @@ jobs:
         PORT: ${{ secrets.PORT }}
       run: npm test
 
-    - name: Zip application code
-      run: |
-        zip -r webapp.zip .
 
     #
     - name: Upload webapp artifact
