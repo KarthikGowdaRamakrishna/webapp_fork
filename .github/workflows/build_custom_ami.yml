@@ -139,6 +139,6 @@ jobs:
                      -var "DB_PASSWORD=${DB_PASSWORD}" \
                      -var "DB_NAME=${DB_NAME}" \
                      -var "DB_PORT=${DB_PORT}" \
-                     -var "aws_demo_user=${DEMO_USER }" \
+                     -var "aws_demo_user=${DEMO_USER}" \
                      -var "aws_dev_user=${DEV_USER}" \
                      ./packer/aws.pkr.hcl
