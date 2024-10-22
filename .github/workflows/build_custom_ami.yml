@@ -123,6 +123,10 @@ jobs:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         DB_NAME: ${{ secrets.DB_NAME }}
         DB_PORT: ${{ secrets.DB_PORT }}
+        DEMO_USER: ${{ secrets.DEMO_USER }}
+        DEV_USER: ${{secrets.DEV_USER}}
+
+
       run: |
         packer build -var "aws_vpc_id=${AWS_VPC_ID}" \
                      -var "aws_subnet_id=${AWS_SUBNET_ID}" \
@@ -135,4 +139,6 @@ jobs:
                      -var "DB_PASSWORD=${DB_PASSWORD}" \
                      -var "DB_NAME=${DB_NAME}" \
                      -var "DB_PORT=${DB_PORT}" \
+                     -var "aws_demo_user=${DEMO_USER }" \
+                     -var "aws_dev_user=${DEV_USER}" \
                      ./packer/aws.pkr.hcl

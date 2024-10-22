@@ -60,6 +60,16 @@ variable "DB_PORT" {
   type = string
 }
 
+variable "aws_dev_user" {
+  description = "AWS Account ID for the dev account where the AMI will be created"
+  type        = string
+}
+
+variable "aws_demo_user" {
+  description = "AWS Account ID for the demo account where the AMI should be shared."
+  type        = string
+}
+
 # Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile
@@ -68,6 +78,7 @@ source "amazon-ebs" "ubuntu" {
   instance_type = var.aws_instance_type
   vpc_id        = var.aws_vpc_id
   subnet_id     = var.aws_subnet_id
+  ami_users     = [var.aws_dev_user, var.aws_demo_user]
 
   # Use the latest Ubuntu 24.04 LTS AMI
   source_ami_filter {
