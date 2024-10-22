@@ -155,11 +155,6 @@ build {
     ]
   }
 
-  #Transfer environment file from local machine to server
-  provisioner "file" {
-    source      = ".env"
-    destination = "/tmp/.env"
-  }
 
   # Copy the environment file to the correct location
   provisioner "shell" {
