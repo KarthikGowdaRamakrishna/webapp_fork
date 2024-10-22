@@ -59,6 +59,7 @@ jobs:
         DB_PORT=${{ secrets.DB_PORT }}
         PORT=${{ secrets.PORT }}
         EOF
+        
       shell: bash
 
     # Step 7: Check if environment file exists
