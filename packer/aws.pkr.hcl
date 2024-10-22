@@ -9,7 +9,7 @@ packer {
 
 # Define variables for AWS and database configurations
 variable "aws_profile" {
-  type    = string
+  type = string
 }
 
 variable "aws_region" {
@@ -45,19 +45,19 @@ variable "volume_size" {
 
 # Database configuration variables (from secrets)
 variable "DB_USER" {
-  type    = string
+  type = string
 }
 
 variable "DB_PASSWORD" {
-  type    = string
+  type = string
 }
 
 variable "DB_NAME" {
-  type    = string
+  type = string
 }
 
 variable "DB_PORT" {
-  type    = string
+  type = string
 }
 
 # Define the source for AWS Amazon AMI
@@ -108,7 +108,7 @@ build {
     destination = "/tmp/csye6225.service"
   }
 
-   provisioner "file" {
+  provisioner "file" {
     source      = ".env"
     destination = "/tmp/.env"
   }
