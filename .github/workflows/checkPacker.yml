@@ -23,15 +23,14 @@ jobs:
      # Step 2.5: Set up the environment file for enironment variables
     - name: Setup Environment File
       run: |
-        mkdir -p ./environment
-        cat << EOF > ./environment/development.env
-        DB_USER=${{ secrets.DB_USER }}
-        DB_HOST=${{ secrets.DB_HOST }}
-        DB_NAME=${{ secrets.DB_NAME }}
-        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-        DB_PORT=${{ secrets.DB_PORT }}
-        PORT=${{ secrets.PORT }}
-        EOF
+       cat << EOF > .env
+       DB_USER=${{ secrets.DB_USER }}
+       DB_HOST=${{ secrets.DB_HOST }}
+       DB_NAME=${{ secrets.DB_NAME }}
+       DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+       DB_PORT=${{ secrets.DB_PORT }}
+       PORT=${{ secrets.PORT }}
+       EOF
       shell: bash
 
     # Step 7: Check if environment file exists
