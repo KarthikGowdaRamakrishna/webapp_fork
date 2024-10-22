@@ -109,7 +109,7 @@ build {
   }
 
   provisioner "file" {
-    source      = ".env"
+    source      = "./.env"
     destination = "/tmp/.env"
   }
 
