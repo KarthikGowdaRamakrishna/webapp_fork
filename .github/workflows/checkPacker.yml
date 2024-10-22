@@ -35,11 +35,11 @@ jobs:
 
     # Step 7: Check if environment file exists
     - name: Check if environment file exists
-      run: ls -l ./environment/development.env
+      run: ls -l ./.env
 
     # Step 8: Show environment file content
     - name: Show environment file content
-      run: cat ./environment/development.env
+      run: cat .env
 
 
     # Step 3: Initialize Packer
