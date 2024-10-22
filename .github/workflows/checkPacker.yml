@@ -58,7 +58,7 @@ jobs:
         zip -r webapp.zip ./
         pwd
 
-    # Step 6: Validate Packer template
+    # Step 6: Validate Packer template with dev and demo accounts
     - name: Validate Packer template
       env:
         AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
