@@ -74,7 +74,7 @@ variable "aws_demo_user" {
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile
   region        = var.aws_region
-  ami_name      = "ubuntu-24.04-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
+  ami_name      = "ubuntuAWS-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
   instance_type = var.aws_instance_type
   vpc_id        = var.aws_vpc_id
   subnet_id     = var.aws_subnet_id
@@ -146,9 +146,9 @@ build {
       "sudo apt-get install -y nodejs",
       "sudo groupadd csye6225",
       "sudo useradd -s /usr/sbin/nologin -g csye6225 -d /var/csye6225 -m csye6225",
-      "sudo apt-get install -y postgresql postgresql-contrib",
-      "sudo systemctl enable postgresql",
-      "sudo systemctl start postgresql",
+      # "sudo apt-get install -y postgresql postgresql-contrib",
+      # "sudo systemctl enable postgresql",
+      # "sudo systemctl start postgresql",
       "sudo mkdir -p /var/applications/webapp",
       "echo test1",
       "sudo unzip /tmp/webapp.zip -d /var/applications/webapp",
@@ -159,20 +159,20 @@ build {
   }
 
   # Provision PostgreSQL configuration using environment variables
-  provisioner "shell" {
-    inline = [
-      "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${var.DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${var.DB_USER} WITH PASSWORD '${var.DB_PASSWORD}';\"",
-      "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${var.DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME} OWNER ${var.DB_USER};\""
-    ]
-  }
+  # provisioner "shell" {
+  #   inline = [
+  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${var.DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${var.DB_USER} WITH PASSWORD '${var.DB_PASSWORD}';\"",
+  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${var.DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME} OWNER ${var.DB_USER};\""
+  #   ]
+  # }
 
 
 
   # Move the environment file to the correct location
   provisioner "shell" {
     inline = [
-      "sudo mv /tmp/.env /var/applications/webapp/.env",
-      "sudo chown csye6225:csye6225 /var/applications/webapp/.env"
+      #"sudo mv /tmp/.env /var/applications/webapp/.env",
+      "sudo chown csye6225:csye6225 /var/applications/webapp/"
     ]
   }
 
