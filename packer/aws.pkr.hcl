@@ -172,7 +172,7 @@ build {
   provisioner "shell" {
     inline = [
       #"sudo mv /tmp/.env /var/applications/webapp/.env",
-      "sudo chown csye6225:csye6225 /var/applications/webapp/"
+      "sudo chown csye6225:csye6225 /var/applications/webapp/.env"
     ]
   }
 
