@@ -168,7 +168,7 @@ build {
 
 
 
-  # Move the environment file to the correct location
+  # Move the environment file to the correct loc
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/.env /var/applications/webapp/.env",
