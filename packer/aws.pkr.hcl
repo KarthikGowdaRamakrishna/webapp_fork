@@ -119,10 +119,10 @@ build {
     destination = "/tmp/csye6225.service"
   }
 
-  provisioner "file" {
-    source      = "./.env"
-    destination = "/tmp/.env"
-  }
+  # provisioner "file" {
+  #   source      = "./.env"
+  #   destination = "/tmp/.env"
+  # }
 
 
   # Move service file and reload systemd daemon
@@ -146,9 +146,9 @@ build {
       "sudo apt-get install -y nodejs",
       "sudo groupadd csye6225",
       "sudo useradd -s /usr/sbin/nologin -g csye6225 -d /var/csye6225 -m csye6225",
-      "sudo apt-get install -y postgresql postgresql-contrib",
-      "sudo systemctl enable postgresql",
-      "sudo systemctl start postgresql",
+      # "sudo apt-get install -y postgresql postgresql-contrib",
+      # "sudo systemctl enable postgresql",
+      # "sudo systemctl start postgresql",
       "sudo mkdir -p /var/applications/webapp",
       "echo test1",
       "sudo unzip /tmp/webapp.zip -d /var/applications/webapp",
@@ -169,13 +169,13 @@ build {
 
 
   # Move the environment file to the correct loc
-  provisioner "shell" {
-    inline = [
-      "sudo mv /tmp/.env /var/applications/webapp/.env",
-      "sudo chown csye6225:csye6225 /var/applications/webapp/.env",
-      "ls -l /var/applications/webapp/"
-    ]
-  }
+  # provisioner "shell" {
+  #   inline = [
+  #     "sudo mv /tmp/.env /var/applications/webapp/.env",
+  #     "sudo chown csye6225:csye6225 /var/applications/webapp/.env",
+  #     "ls -l /var/applications/webapp/"
+  #   ]
+  # }
 
   # Start the Node.js service
   provisioner "shell" {
