@@ -159,12 +159,12 @@ build {
   }
 
   #Provision PostgreSQL configuration using environment variables
-  provisioner "shell" {
-    inline = [
-      "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${var.DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${var.DB_USER} WITH PASSWORD '${var.DB_PASSWORD}';\"",
-      "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${var.DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME} OWNER ${var.DB_USER};\""
-    ]
-  }
+  # provisioner "shell" {
+  #   inline = [
+  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${var.DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${var.DB_USER} WITH PASSWORD '${var.DB_PASSWORD}';\"",
+  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${var.DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME} OWNER ${var.DB_USER};\""
+  #   ]
+  # }
 
 
 
