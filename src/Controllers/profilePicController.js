@@ -8,33 +8,27 @@ import {
 
 const upload = multer({ storage: multer.memoryStorage() }).single("profilePic");
 
+export const uploadProfilePic = async (req, res) => {
+  try {
+    await uploadProfilePicService(req);
+    res.status(201).json({ message: "Profile picture uploaded successfully" });
+  } catch (error) {
+    logger.error("Error uploading profile picture:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
-
-export const uploadProfilePic = async (req, res, next) => {
-    try {
-      await uploadProfilePicService(req);
-      res.status(201).json({ message: "Profile picture uploaded successfully" });
-    } catch (error) {
-      logger.error("Error uploading profile picture:", error);
-      next(error);
-    }
-  };
-
-
-
-export const getProfilePic = async (req, res, next) => {
+export const getProfilePic = async (req, res) => {
   try {
     const profilePic = await getProfilePicService(req.user.id);
     res.status(200).json(profilePic);
   } catch (error) {
     logger.error("Error retrieving profile picture:", error);
-    
-    next(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-
-export const deleteProfilePic = async (req, res, next) => {
+export const deleteProfilePic = async (req, res) => {
   try {
     await deleteProfilePicService(req.user.id);
     logger.info(`Profile picture deleted successfully for user ID: ${req.user.id}`);

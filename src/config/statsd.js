@@ -3,15 +3,21 @@ import {
     PutObjectCommand,
     DeleteObjectCommand,
   } from "@aws-sdk/client-s3";
+  import { CloudWatch } from "@aws-sdk/client-cloudwatch";
   import StatsD from "node-statsd";
-   
+  
   // Initialize StatsD client with a namespace
   const statsdClient = new StatsD({ prefix: "aws.s3." });
-   
+  
+  // Initialize CloudWatch client
+  const cloudwatch = new CloudWatch({
+    region: process.env.AWS_REGION || "us-east-1",
+  });
+  
   const s3Client = new S3Client({
     region: process.env.AWS_REGION || "us-east-1",
   });
-   
+  
   // Helper function to measure operation duration with StatsD
   async function withStatsD(operation, label, command) {
     const start = process.hrtime();
@@ -27,11 +33,11 @@ import {
       throw error;
     }
   }
-   
+  
   // Wrapped S3 operations with StatsD metrics
   export const uploadToS3 = (params) =>
     withStatsD("s3.upload", "upload", new PutObjectCommand(params));
-   
+  
   export const deleteFromS3 = async (params) => {
     try {
       const result = await s3Client.send(new DeleteObjectCommand(params));
@@ -42,8 +48,7 @@ import {
       throw error;
     }
   };
-
-
+  
   function sendMetricToCloudWatch(metricName, value, unit = "Count") {
     const params = {
       MetricData: [
@@ -55,7 +60,7 @@ import {
       ],
       Namespace: "csye6225_v3",
     };
-   
+  
     // No need to push data on local env
     if (process.env.NODE_ENV !== "test") {
       cloudwatch.putMetricData(params, (err) => {
@@ -69,20 +74,24 @@ import {
       });
     }
   }
-
+  
   const originalIncrement = statsdClient.increment;
-  statsdClient.increment = function (stat, value = 1, sampleRate, tags, callback) {
+  statsdClient.increment = function (
+    stat,
+    value = 1,
+    sampleRate,
+    tags,
+    callback
+  ) {
     originalIncrement.call(this, stat, value, sampleRate, tags, callback);
     sendMetricToCloudWatch(stat, value, "Count");
   };
-   
+  
   const originalTiming = statsdClient.timing;
   statsdClient.timing = function (stat, time, sampleRate, tags, callback) {
     originalTiming.call(this, stat, time, sampleRate, tags, callback);
     sendMetricToCloudWatch(stat, time, "Milliseconds");
   };
-
-
-
+  
   export { statsdClient };
-   
+  
