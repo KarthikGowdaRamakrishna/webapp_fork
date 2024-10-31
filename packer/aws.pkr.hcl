@@ -119,7 +119,7 @@ build {
 
   # Upload CloudWatch agent configuration file
   provisioner "file" {
-    source      = "./cloudwatch-agent-config.json"
+    source      = "./packer/cloudwatch-agent-config.json"
     destination = "/tmp/cloudwatch-agent-config.json"
   }
 
