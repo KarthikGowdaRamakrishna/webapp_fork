@@ -150,6 +150,7 @@ build {
       # "sudo systemctl enable postgresql",
       # "sudo systemctl start postgresql",
       "sudo mkdir -p /var/applications/webapp",
+      "sudo chmod -R 755 /var/applications/",
       "echo test1",
       "sudo unzip /tmp/webapp.zip -d /var/applications/webapp",
       "sudo chown -R csye6225:csye6225 /var/applications/webapp",
