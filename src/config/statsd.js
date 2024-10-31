@@ -42,6 +42,47 @@ import {
       throw error;
     }
   };
+
+
+  function sendMetricToCloudWatch(metricName, value, unit = "Count") {
+    const params = {
+      MetricData: [
+        {
+          MetricName: metricName,
+          Value: value,
+          Unit: unit,
+        },
+      ],
+      Namespace: "csye6225_v3",
+    };
    
+    // No need to push data on local env
+    if (process.env.NODE_ENV !== "test") {
+      cloudwatch.putMetricData(params, (err) => {
+        if (err) {
+          console.error("Error sending metric to CloudWatch:", err);
+        } else {
+          console.log(
+            `Metric sent to CloudWatch: ${metricName} with value ${value}`
+          );
+        }
+      });
+    }
+  }
+
+  const originalIncrement = statsdClient.increment;
+  statsdClient.increment = function (stat, value = 1, sampleRate, tags, callback) {
+    originalIncrement.call(this, stat, value, sampleRate, tags, callback);
+    sendMetricToCloudWatch(stat, value, "Count");
+  };
+   
+  const originalTiming = statsdClient.timing;
+  statsdClient.timing = function (stat, time, sampleRate, tags, callback) {
+    originalTiming.call(this, stat, time, sampleRate, tags, callback);
+    sendMetricToCloudWatch(stat, time, "Milliseconds");
+  };
+
+
+
   export { statsdClient };
    
