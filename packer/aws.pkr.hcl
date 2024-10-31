@@ -216,7 +216,6 @@ build {
       "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
       "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
       "sudo systemctl enable amazon-cloudwatch-agent"
-      "sudo systemctl start amazon-cloudwatch-agent"
     ]
   }
 
