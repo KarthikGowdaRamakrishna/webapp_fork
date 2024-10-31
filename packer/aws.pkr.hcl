@@ -184,20 +184,30 @@ build {
   # }
 
   # Install CloudWatch Agent and apply configuration
-  provisioner "shell" {
-    inline = [
-      # Install wget to download CloudWatch Agent
-      "sudo apt-get update -y && sudo apt-get install -y wget",
-      # Download the CloudWatch Agent from AWS's S3 bucket
-      "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
-      # Install the CloudWatch Agent
-      "sudo dpkg -i amazon-cloudwatch-agent.deb",
-      # Move the CloudWatch Agent config file to the appropriate location
-      "sudo mv /tmp/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json",
-      # Apply the CloudWatch Agent configuration and start the agent
-      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json -s"
-    ]
-  }
+# Install CloudWatch Agent, configure, and start it
+provisioner "shell" {
+  inline = [
+    # Update system and install wget to download CloudWatch Agent
+    "sudo apt-get update -y && sudo apt-get install -y wget",
+    # Download the CloudWatch Agent from AWS's S3 bucket
+    "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+    # Install the CloudWatch Agent
+    "sudo dpkg -i amazon-cloudwatch-agent.deb",
+    # Create the configuration directory for CloudWatch Agent
+    "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
+    # Move the CloudWatch Agent config file to the appropriate location
+    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    # Set ownership and permissions for the configuration file
+    "sudo chown root:root /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    "sudo chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    # Stop the CloudWatch Agent if it is running
+    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
+    # Start the CloudWatch Agent with the specified configuration
+    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
+    # Enable the CloudWatch Agent to start on boot
+    "sudo systemctl enable amazon-cloudwatch-agent"
+  ]
+}
 
 
   # Start the Node.js service
