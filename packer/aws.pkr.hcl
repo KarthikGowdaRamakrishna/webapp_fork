@@ -120,10 +120,10 @@ build {
   }
 
   # Upload CloudWatch agent configuration file
-  provisioner "file" {
-    source      = "./packer/cloudwatch-agent-config.json"
-    destination = "/tmp/cloudwatch-agent-config.json"
-  }
+  # provisioner "file" {
+  #   source      = "./packer/cloudwatch-agent-config.json"
+  #   destination = "/tmp/cloudwatch-agent-config.json"
+  # }
 
   # provisioner "file" {
   #   source      = "./.env"
@@ -164,50 +164,60 @@ build {
     ]
   }
 
-  #Provision PostgreSQL configuration using environment variables
-  # provisioner "shell" {
-  #   inline = [
-  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${var.DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${var.DB_USER} WITH PASSWORD '${var.DB_PASSWORD}';\"",
-  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${var.DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME} OWNER ${var.DB_USER};\""
-  #   ]
-  # }
-
-
-
-  # Move the environment file to the correct loc
-  # provisioner "shell" {
-  #   inline = [
-  #     "sudo mv /tmp/.env /var/applications/webapp/.env",
-  #     "sudo chown csye6225:csye6225 /var/applications/webapp/.env",
-  #     "ls -l /var/applications/webapp/"
-  #   ]
-  # }
-
   # Install CloudWatch Agent and apply configuration
 # Install CloudWatch Agent, configure, and start it
-provisioner "shell" {
-  inline = [
-    # Update system and install wget to download CloudWatch Agent
-    "sudo apt-get update -y && sudo apt-get install -y wget",
-    # Download the CloudWatch Agent from AWS's S3 bucket
-    "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
-    # Install the CloudWatch Agent
-    "sudo dpkg -i amazon-cloudwatch-agent.deb",
-    # Create the configuration directory for CloudWatch Agent
-    "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
-    # Move the CloudWatch Agent config file to the appropriate location
-    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
-    # Set ownership and permissions for the configuration file
-    "sudo chown root:root /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
-    "sudo chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
-    # Stop the CloudWatch Agent if it is running
-    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
-    # Start the CloudWatch Agent with the specified configuration
-    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
-    # Enable the CloudWatch Agent to start on boot
-    "sudo systemctl enable amazon-cloudwatch-agent"
-  ]
-}
+# provisioner "shell" {
+#   inline = [
+#     # Update system and install wget to download CloudWatch Agent
+#     "sudo apt-get update -y && sudo apt-get install -y wget",
+#     # Download the CloudWatch Agent from AWS's S3 bucket
+#     "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+#     # Install the CloudWatch Agent
+#     "sudo dpkg -i amazon-cloudwatch-agent.deb",
+#     # Create the configuration directory for CloudWatch Agent
+#     "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
+#     # Move the CloudWatch Agent config file to the appropriate location
+#     "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+#     # Set ownership and permissions for the configuration file
+#     "sudo chown root:root /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+#     "sudo chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+#     # Stop the CloudWatch Agent if it is running
+#     "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
+#     # Start the CloudWatch Agent with the specified configuration
+#     "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
+#     # Enable the CloudWatch Agent to start on boot
+#     "sudo systemctl enable amazon-cloudwatch-agent"
+#   ]
+# }
+
+
+# Install the Unified CloudWatch Agent
+  provisioner "shell" {
+    inline = [
+      "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+      "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
+      "rm amazon-cloudwatch-agent.deb"
+    ]
+  }
+ 
+  # Copy CloudWatch Agent configuration file
+  provisioner "file" {
+    source      = "./packer/amazon-cloudwatch-agent.json"
+    destination = "/tmp/amazon-cloudwatch-agent.json"
+  }
+ 
+  provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
+      "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+      "sudo chown root:root /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+      "sudo chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
+      "sudo systemctl enable amazon-cloudwatch-agent"
+    ]
+  }
+
 
 
   # Start the Node.js service
