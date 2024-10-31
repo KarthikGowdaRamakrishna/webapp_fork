@@ -164,25 +164,6 @@ build {
     ]
   }
 
-  #Provision PostgreSQL configuration using environment variables
-  # provisioner "shell" {
-  #   inline = [
-  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${var.DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${var.DB_USER} WITH PASSWORD '${var.DB_PASSWORD}';\"",
-  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${var.DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME} OWNER ${var.DB_USER};\""
-  #   ]
-  # }
-
-
-
-  # Move the environment file to the correct loc
-  # provisioner "shell" {
-  #   inline = [
-  #     "sudo mv /tmp/.env /var/applications/webapp/.env",
-  #     "sudo chown csye6225:csye6225 /var/applications/webapp/.env",
-  #     "ls -l /var/applications/webapp/"
-  #   ]
-  # }
-
   # Install CloudWatch Agent and apply configuration
 # Install CloudWatch Agent, configure, and start it
 # provisioner "shell" {
@@ -208,6 +189,7 @@ build {
 #     "sudo systemctl enable amazon-cloudwatch-agent"
 #   ]
 # }
+
 
 # Install the Unified CloudWatch Agent
   provisioner "shell" {
@@ -235,8 +217,7 @@ build {
       "sudo systemctl enable amazon-cloudwatch-agent"
     ]
   }
- 
-has context menu
+
 
 
   # Start the Node.js service
