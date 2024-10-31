@@ -188,16 +188,12 @@ build {
     inline = [
       # Install wget to download CloudWatch Agent
       "sudo apt-get update -y && sudo apt-get install -y wget",
-
       # Download the CloudWatch Agent from AWS's S3 bucket
       "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
-
       # Install the CloudWatch Agent
       "sudo dpkg -i amazon-cloudwatch-agent.deb",
-
       # Move the CloudWatch Agent config file to the appropriate location
       "sudo mv /tmp/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json",
-
       # Apply the CloudWatch Agent configuration and start the agent
       "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json -s"
     ]
