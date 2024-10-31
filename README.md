@@ -92,5 +92,3 @@ packer build -var-file=./packer/dev.pkrvars.hcl ./packer/aws.pkr.hcl
 
 ##### create EC2 instance with this AMI image and the following command to check postgres is comaptable in the created instance 
 
-sudo systemctl status postgresql
-psql --version
