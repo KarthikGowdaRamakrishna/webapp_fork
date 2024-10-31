@@ -7,7 +7,7 @@ packer {
   }
 }
 
-# Define variables for AWS and database configurations (existing variables)
+# Define variables for AWS and database configurations
 variable "aws_profile" {
   type = string
 }
@@ -30,6 +30,7 @@ variable "aws_source_ami" {
 variable "aws_vpc_id" {
   description = "VPC ID where the build instance will run"
   type        = string
+
 }
 
 variable "aws_subnet_id" {
@@ -42,6 +43,7 @@ variable "volume_size" {
   type        = number
 }
 
+# Database configuration variables (from secrets)
 variable "DB_USER" {
   type = string
 }
@@ -123,6 +125,12 @@ build {
     destination = "/tmp/cloudwatch-agent-config.json"
   }
 
+  # provisioner "file" {
+  #   source      = "./.env"
+  #   destination = "/tmp/.env"
+  # }
+
+
   # Move service file and reload systemd daemon
   provisioner "shell" {
     inline = [
@@ -144,33 +152,53 @@ build {
       "sudo apt-get install -y nodejs",
       "sudo groupadd csye6225",
       "sudo useradd -s /usr/sbin/nologin -g csye6225 -d /var/csye6225 -m csye6225",
+      # "sudo apt-get install -y postgresql postgresql-contrib",
+      # "sudo systemctl enable postgresql",
+      # "sudo systemctl start postgresql",
       "sudo mkdir -p /var/applications/webapp",
-      "sudo chmod -R 755 /var/applications/",
+      "echo test1",
       "sudo unzip /tmp/webapp.zip -d /var/applications/webapp",
       "sudo chown -R csye6225:csye6225 /var/applications/webapp",
+      "echo test2",
       "sudo npm install --prefix /var/applications/webapp/"
     ]
   }
 
-# Install CloudWatch Agent and apply configuration
-provisioner "shell" {
-  inline = [
-    # Install wget to download CloudWatch Agent
-    "sudo apt-get update -y && sudo apt-get install -y wget",
+  #Provision PostgreSQL configuration using environment variables
+  # provisioner "shell" {
+  #   inline = [
+  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${var.DB_USER}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE USER ${var.DB_USER} WITH PASSWORD '${var.DB_PASSWORD}';\"",
+  #     "sudo -u postgres psql -tc \"SELECT 1 FROM pg_database WHERE datname='${var.DB_NAME}';\" | grep -q 1 || sudo -u postgres psql -c \"CREATE DATABASE ${var.DB_NAME} OWNER ${var.DB_USER};\""
+  #   ]
+  # }
 
-    # Download the CloudWatch Agent from AWS's S3 bucket
-    "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
 
-    # Install the CloudWatch Agent
-    "sudo dpkg -i amazon-cloudwatch-agent.deb",
 
-    # Move the CloudWatch Agent config file to the appropriate location
-    "sudo mv /tmp/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json",
+  # Move the environment file to the correct loc
+  # provisioner "shell" {
+  #   inline = [
+  #     "sudo mv /tmp/.env /var/applications/webapp/.env",
+  #     "sudo chown csye6225:csye6225 /var/applications/webapp/.env",
+  #     "ls -l /var/applications/webapp/"
+  #   ]
+  # }
 
-    # Apply the CloudWatch Agent configuration and start the agent
-    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json -s"
-  ]
-}
+  # Install CloudWatch Agent and apply configuration
+  provisioner "shell" {
+    inline = [
+      # Install wget to download CloudWatch Agent
+      "sudo apt-get update -y && sudo apt-get install -y wget",
+      # Download the CloudWatch Agent from AWS's S3 bucket
+      "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+      # Install the CloudWatch Agent
+      "sudo dpkg -i amazon-cloudwatch-agent.deb",
+      # Move the CloudWatch Agent config file to the appropriate location
+      "sudo mv /tmp/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json",
+      # Apply the CloudWatch Agent configuration and start the agent
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-agent-config.json -s"
+    ]
+  }
+
 
   # Start the Node.js service
   provisioner "shell" {
