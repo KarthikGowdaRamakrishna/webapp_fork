@@ -209,12 +209,14 @@ build {
   provisioner "shell" {
     inline = [
       "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
+      "ls -al /tmp"
       "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
       "sudo chown root:root /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
       "sudo chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
       "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
       "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
       "sudo systemctl enable amazon-cloudwatch-agent"
+      "sudo systemctl start amazon-cloudwatch-agent"
     ]
   }
 
