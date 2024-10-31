@@ -1,13 +1,9 @@
 import healthService from "../services/healthService.js";
+import logger from "../utils/logger.js";
 
 export const healthCheck = async (req, res) => {
   const allowedHeaders = [
-    "user-agent",
-    "accept",
-    "postman-token",
-    "host",
-    "accept-encoding",
-    "connection",
+    "user-agent", "accept", "postman-token", "host", "accept-encoding", "connection",
   ];
 
   try {
@@ -15,7 +11,6 @@ export const healthCheck = async (req, res) => {
       (header) => !allowedHeaders.includes(header.toLowerCase())
     );
 
-    // Ensure no payload is sent in the request
     if (
       Object.keys(req.body).length > 0 ||
       hasSomeHeaders ||
@@ -23,24 +18,27 @@ export const healthCheck = async (req, res) => {
       (req.files > 0 && Object.keys(req.files).length > 0)
     ) {
       res.setHeader('Cache-Control', 'no-cache');
-      return res.status(400).end(); // Bad Request if any payload is present
+      logger.warn('Invalid payload or headers in health check request');
+      return res.status(400).end();
     }
-    // Check health status through the service layer
-    const isDatabaseConnected = await healthService();
 
+    const isDatabaseConnected = await healthService();
     if (isDatabaseConnected) {
+      logger.info('Database connection successful');
       res.setHeader('Cache-Control', 'no-cache');
-      return res.status(200).end(); // Success
+      return res.status(200).end();
     } else {
+      logger.error('Database connection failed');
       res.setHeader('Cache-Control', 'no-cache');
-      return res.status(503).end(); // Service Unavailable
+      return res.status(503).end();
     }
   } catch (err) {
+    logger.error('Health check error:', err);
     res.status(503).end();
   }
 };
 
 export const methodNotAllowed = (req, res) => {
-  res.status(405).end(); // Method Not Allowed
+  logger.warn(`Method not allowed for path: ${req.path}`);
+  res.status(405).end();
 };
-

@@ -1,6 +1,6 @@
-// userService.js
 import User from '../models/User.js';
 import bcrypt from 'bcrypt';
+import logger from '../utils/logger.js';
 
 export const createUser = async (userData) => {
   try {
@@ -8,25 +8,25 @@ export const createUser = async (userData) => {
     userData.password = hashedPassword;
 
     const newUser = await User.create(userData);
-    return {
-      id: newUser.id,
-      first_name: newUser.first_name,
-      last_name: newUser.last_name,
-      email: newUser.email,
-      account_created: newUser.account_created,
-      account_updated: newUser.account_updated,
-    };
+    logger.info(`User created with ID: ${newUser.id}`);
+    return newUser;
   } catch (error) {
-    console.error('Error creating user:', error);
+    logger.error('Error creating user:', error);
     throw error;
   }
 };
 
 export const getUserByEmail = async (email) => {
   try {
-    return await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email } });
+    if (user) {
+      logger.info(`User found with email: ${email}`);
+    } else {
+      logger.warn(`User not found with email: ${email}`);
+    }
+    return user;
   } catch (error) {
-    console.error('Error fetching user by email:', error);
+    logger.error('Error fetching user by email:', error);
     throw error;
   }
 };
@@ -35,6 +35,7 @@ export const updateUser = async (email, updateData) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
+      logger.warn(`User not found for update: ${email}`);
       return null;
     }
 
@@ -46,10 +47,10 @@ export const updateUser = async (email, updateData) => {
 
     user.account_updated = new Date();
     await user.save();
-
+    logger.info(`User updated with email: ${email}`);
     return user;
   } catch (error) {
-    console.error('Error updating user:', error);
+    logger.error('Error updating user:', error);
     throw error;
   }
 };
