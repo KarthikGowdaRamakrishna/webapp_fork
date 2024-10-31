@@ -16,9 +16,9 @@ app.use('/v1/user/self', authenticateUser, (req, res, next) => {
   next();
 });
 
-// app.post('/v1/user', createUser);
-// app.get('/v1/user/self', authenticateUser, getUserInfo);
-// app.put('/v1/user/self', authenticateUser, updateUser);
+app.post('/v1/user', createUser);
+app.get('/v1/user/self', authenticateUser, getUserInfo);
+app.put('/v1/user/self', authenticateUser, updateUser);
 
 //Define profile picture-related routes
 app.post('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
@@ -47,11 +47,6 @@ app.delete('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
     next(error); // Pass error to error-handling middleware
   }
 });
-
-// Routes for profile picture operations
-app.post('/user/self/pic', authenticateUser, uploadProfilePic);
-app.get('/user/self/pic', authenticateUser, getProfilePic);
-app.delete('/user/self/pic', authenticateUser, deleteProfilePic);
 
 
 // Health check routes
