@@ -3,12 +3,15 @@ import logger from "../utils/logger.js";
 
 export const healthCheck = async (req, res) => {
   const allowedHeaders = [
-    "user-agent", "accept", "postman-token", "host", "accept-encoding", "connection",
+    'content-type', 'accept', 'user-agent', 'host', 'content-length',
+    'accept-encoding', 'connection', 'authorization', 'postman-token',
+    'x-forwarded-for', 'x-forwarded-proto', 'x-amzn-trace-id', 'x-forwarded-Port'
   ];
+  
 
   try {
     const hasSomeHeaders = Object.keys(req.headers).some(
-      (header) => !allowedHeaders.includes(header.toLowerCase())
+      (header) => !allowedHeaders.includes(header.toLowerCase()) && !header.toLowerCase().startsWith('x-')
     );
 
     if (
