@@ -1,9 +1,7 @@
 import { createUser as createUserService, getUserByEmail, updateUser as updateUserService } from '../services/userService.js';
 import logger from '../utils/logger.js';
 
-// const allowedHeaders = [
-//   'content-type', 'accept', 'user-agent', 'host', 'content-length', 'accept-encoding', 'connection', 'authorization', 'postman-token'
-// ];
+
 
 const allowedHeaders = [
   'content-type', 'accept', 'user-agent', 'host', 'content-length',
