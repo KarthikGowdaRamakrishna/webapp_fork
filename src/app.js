@@ -3,7 +3,7 @@ import express from 'express';
 import { healthCheck, methodNotAllowed } from './Controllers/healthController.js';
 import { createUser, getUserInfo, updateUser } from './Controllers/userController.js'; // Import user-related controllers
 import { uploadProfilePic, getProfilePic, deleteProfilePic } from './Controllers/profilePicController.js'; // Import profile picture-related controllers
-import authenticateUser from './middleware/basicAuth.js';
+import {authenticateUser, blockUnverifiedUsers} from './middleware/basicAuth.js';
 
 const app = express();
 app.use(express.json());
@@ -17,8 +17,8 @@ app.use('/v1/user/self', authenticateUser, (req, res, next) => {
 });
 
 app.post('/v1/user', createUser);
-app.get('/v1/user/self', authenticateUser, getUserInfo);
-app.put('/v1/user/self', authenticateUser, updateUser);
+app.get('/v1/user/self', authenticateUser, blockUnverifiedUsers, getUserInfo);
+app.put('/v1/user/self', authenticateUser, blockUnverifiedUsers, updateUser);
 
 //Define profile picture-related routes
 app.post('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
