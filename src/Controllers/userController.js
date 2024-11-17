@@ -1,7 +1,9 @@
 import { createUser as createUserService, getUserByEmail, updateUser as updateUserService } from '../services/userService.js';
 import logger from '../utils/logger.js';
-
-
+import EmailTracking from '../models/EmailTracking.js';
+import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
+import AWS from 'aws-sdk';
 
 const allowedHeaders = [
   'content-type', 'accept', 'user-agent', 'host', 'content-length',
@@ -9,14 +11,16 @@ const allowedHeaders = [
   'x-forwarded-for', 'x-forwarded-proto', 'x-amzn-trace-id', 'x-forwarded-Port'
 ];
 
-
+// Configure AWS SNS (no region explicitly set here)
+const sns = new AWS.SNS({
+  region: process.env.AWS_REGION || 'us-east-1', // Replace 'us-east-1' with your default region
+});
 export const createUser = async (req, res) => {
   logger.info('Incoming headers:', req.headers);
   try {
     const hasUnexpectedHeaders = Object.keys(req.headers).some(
       (header) => !allowedHeaders.includes(header.toLowerCase()) && !header.toLowerCase().startsWith('x-')
     );
-    
 
     if (hasUnexpectedHeaders) {
       logger.warn('Unexpected headers detected in request');
@@ -35,14 +39,40 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ error: 'Email already in use.' });
     }
 
+    // Step 1: Create the user
     const newUser = await createUserService(req.body);
     logger.info(`User created successfully: ${newUser.id}`);
+
+    // Step 2: Generate a verification token
+    const token = crypto.randomBytes(16).toString('hex');
+    const expiryTime = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes expiry
+
+    // Step 3: Save token in EmailTracking
+    await EmailTracking.create({ email, token, expiryTime });
+    logger.info(`Verification token generated and saved for user: ${email}`);
+
+    // Step 4: Publish message to SNS
+    const message = JSON.stringify({ email, token });
+    const params = {
+      Message: message,
+      TopicArn: process.env.SNS_TOPIC_ARN, // Add this to your .env
+    };
+
+    try {
+      await sns.publish(params).promise();
+      logger.info(`Verification email request sent to SNS for user: ${email}`);
+    } catch (snsError) {
+      logger.error(`Failed to publish verification message for user: ${email}`, snsError);
+    }
+
+    // Step 5: Respond with success
     res.status(201).json(newUser);
   } catch (error) {
     logger.error('Error creating user:', error);
     res.status(500).json({ error: 'An error occurred while creating the user.' });
   }
 };
+
 
 export const getUserInfo = async (req, res) => {
   try {

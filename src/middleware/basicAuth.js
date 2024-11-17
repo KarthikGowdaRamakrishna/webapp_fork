@@ -38,6 +38,19 @@ const authenticateUser = async (req, res, next) => {
     return res.status(500).json({ error: 'An error occurred during authentication.' });
   }
 };
+// Middleware for Blocking Unverified Users
+const blockUnverifiedUsers = async (req, res, next) => {
+  try {
+    const user = req.user; // Assume `authenticateUser` already added user to req
+    if (!user || !user.is_verified) {
+      console.error('User is not verified:', user?.email || 'No user');
+      return res.status(403).json({ error: 'Access denied. Please verify your email address.' });
+    }
+    next(); // Pass control to the next middleware/route handler
+  } catch (error) {
+    console.error('Error in blocking unverified user:', error);
+    res.status(500).json({ error: 'Error occurred while processing the request.' });
+  }
+};
 
-// Use export default for ES modules
-export default authenticateUser;
+export { authenticateUser, blockUnverifiedUsers };
