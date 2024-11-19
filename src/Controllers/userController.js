@@ -28,11 +28,14 @@ export const createUser = async (req, res) => {
     }
 
     const { first_name, last_name, email, password } = req.body;
+
+    // Validate input fields
     if (!first_name || !last_name || !email || !password) {
       logger.warn('Missing fields in user creation request');
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
+    // Check if the user already exists
     const existingUser = await getUserByEmail(email);
     if (existingUser) {
       logger.warn(`Attempt to create a user with an existing email: ${email}`);
@@ -43,19 +46,11 @@ export const createUser = async (req, res) => {
     const newUser = await createUserService(req.body);
     logger.info(`User created successfully: ${newUser.id}`);
 
-    // Step 2: Generate a verification token
-    const token = crypto.randomBytes(16).toString('hex');
-    const expiryTime = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes expiry
-
-    // Step 3: Save token in EmailTracking
-    await EmailTracking.create({ email, token, expiryTime });
-    logger.info(`Verification token generated and saved for user: ${email}`);
-
-    // Step 4: Publish message to SNS
-    const message = JSON.stringify({ email, token });
+    // Step 2: Publish message to SNS
+    const message = JSON.stringify({ email, userId: newUser.id });
     const params = {
       Message: message,
-      TopicArn: process.env.SNS_TOPIC_ARN, // Add this to your .env
+      TopicArn: process.env.SNS_TOPIC_ARN, // Ensure SNS_TOPIC_ARN is in .env
     };
 
     try {
@@ -63,9 +58,10 @@ export const createUser = async (req, res) => {
       logger.info(`Verification email request sent to SNS for user: ${email}`);
     } catch (snsError) {
       logger.error(`Failed to publish verification message for user: ${email}`, snsError);
+      return res.status(500).json({ error: 'Failed to send verification email.' });
     }
 
-    // Step 5: Respond with success
+    // Step 3: Respond with success
     res.status(201).json(newUser);
   } catch (error) {
     logger.error('Error creating user:', error);
