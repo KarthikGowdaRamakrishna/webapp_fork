@@ -1,4 +1,3 @@
-// import EmailTracking from '../models/EmailTracking.js';
 
 // export const getEmailTrackingByToken = async (token) => {
 //   return await EmailTracking.findOne({ where: { token } });
