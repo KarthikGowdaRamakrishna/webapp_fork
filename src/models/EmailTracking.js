@@ -17,7 +17,7 @@ const EmailTracking = sequelize.define('EmailTracking', {
   },
 }, {
   timestamps: false, // Disable automatic timestamps
-  tableName: 'email_tracking', // Explicit table name for clarity
+  tableName: 'EmailTracking', // Explicit table name for clarity
 });
 
 export default EmailTracking;

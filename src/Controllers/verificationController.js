@@ -3,11 +3,13 @@ import logger from '../utils/logger.js';
 
 export const verifyUser = async (req, res) => {
   const { user, token } = req.query; // Extract userId and token from the query params
-  logger.debug('Verification process started for:', { user, token });
+  logger.debug(`Request received with user: ${user}, token: ${token}`);
 
   try {
     // Step 1: Fetch the email tracking record
+    logger.info('Fetching token details from EmailTracking');
     const emailTracking = await getEmailTrackingByToken(token);
+    
 
     if (!emailTracking) {
       logger.error('Invalid verification link or token does not exist');
@@ -15,6 +17,7 @@ export const verifyUser = async (req, res) => {
     }
 
     // Step 2: Check if the token has expired
+    logger.info('timer started');
     const currentTime = new Date.now();
     if (emailTracking.expiry_time.getTime() < currentTime) {
       logger.error('Verification link has expired');
@@ -22,6 +25,7 @@ export const verifyUser = async (req, res) => {
     }
 
     // Step 3: Update the verification status in the database
+    logger.info('start before changing status');
     await setVerification(emailTracking.email);
     logger.info(`Email verified successfully for user: ${emailTracking.email}`);
 
