@@ -18,7 +18,7 @@ const sequelize = new Sequelize(
 
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({ alter: false });  // This will create or update the table structure
+    await sequelize.sync({ alter: true });  // This will create or update the table structure
     console.log('All models were synchronized successfully.');
   } catch (error) {
     console.error('Error syncing models with the database:', error);

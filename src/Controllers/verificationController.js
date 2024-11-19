@@ -18,8 +18,8 @@ export const verifyUser = async (req, res) => {
 
     // Step 2: Check if the token has expired
     logger.info('timer started');
-    const currentTime = new Date.now();
-    if (emailTracking.expiry_time.getTime() < currentTime) {
+    const currentTime =  Date.now();
+    if (emailTracking.expiryTime.getTime() < currentTime) {
       logger.error('Verification link has expired');
       return res.status(403).json({ error: 'Verification link has expired' });
     }
