@@ -1,4 +1,4 @@
-import { getEmailTrackingByToken, updateEmailTrackingStatus } from '../services/emailTrackingService.js';// Service functions to handle DB operations
+import { getEmailTrackingByToken, setVerification } from '../services/emailTrackingService.js';// Service functions to handle DB operations
 import logger from '../utils/logger.js';
 
 export const verifyUser = async (req, res) => {
