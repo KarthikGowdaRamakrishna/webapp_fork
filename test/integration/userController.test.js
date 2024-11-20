@@ -11,7 +11,7 @@ jest.mock('../../src/models/User.js', () => ({
 }));
 
 beforeAll(async () => {
-  await sequelize.sync({ force: true }); // Reset the database schema
+  await sequelize.sync({ force: true }); 
 });
 
 beforeEach(() => {
