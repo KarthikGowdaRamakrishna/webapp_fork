@@ -144,19 +144,9 @@ jobs:
                      -var "aws_dev_user=${DEV_USER}" \
                      ./packer/aws.pkr.hcl 
 
-
     - name: Update Launch Template
       run: |
-        asg_name="terraform-20241120032933702700000008" 
-
-        # Check if the autoscaling group exists
-        asg_exists=$(aws autoscaling describe-auto-scaling-groups \
-          --auto-scaling-group-names $asg_name --query "length(AutoScalingGroups)" --output text)
-
-        if [ "$asg_exists" -eq 0 ]; then
-          echo "Autoscaling group $asg_name not found. Skipping update process"
-          exit 1
-        fi
+        asg_name="terraform-20241120032933702700000008"
 
         # Get the latest AMI ID
         latest_ami=$(aws ec2 describe-images \
@@ -183,3 +173,37 @@ jobs:
           --auto-scaling-group-name $asg_name \
           --launch-template "LaunchTemplateId=lt-0618ba0896499b77d,Version=$((latest_version+1))"
         echo "Auto-scaling group updated with new launch template version"
+
+    - name: Refresh Auto Scaling Group
+      run: |
+        # Start instance refresh for the Auto Scaling Group
+        refresh_id=$(aws autoscaling start-instance-refresh \
+          --auto-scaling-group-name terraform-20241120032933702700000008 \
+          --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}' \
+          --query 'InstanceRefreshId' --output text)
+        echo "Instance Refresh ID: $refresh_id"
+
+        # Monitor the instance refresh status
+        while true; do
+          refresh_status=$(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name terraform-20241120032933702700000008 \
+            --query "InstanceRefreshes[?InstanceRefreshId=='$refresh_id'].Status" \
+            --output text)
+          echo "Instance Refresh Status: $refresh_status"
+
+          if [ "$refresh_status" == "Successful" ]; then
+            echo "Instance refresh completed successfully."
+            break
+          elif [ "$refresh_status" == "Failed" ]; then
+            echo "Instance refresh failed."
+            exit 1
+          elif [ "$refresh_status" == "Cancelled" ]; then
+            echo "Instance refresh was cancelled."
+            exit 1
+          else
+            echo "Instance refresh in progress. Waiting..."
+            sleep 30
+          fi
+        done
+
+     
