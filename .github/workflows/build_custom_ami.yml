@@ -147,7 +147,7 @@ jobs:
     - name: Update Launch Template
       if: always()
       run: >
-          asg_name="AutoScalingInstance" 
+          asg_name="terraform-20241120032933702700000008" 
  
           # Check if the autoscaling group exists
  
