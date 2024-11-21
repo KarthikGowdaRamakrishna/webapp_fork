@@ -92,3 +92,36 @@ packer build -var-file=./packer/dev.pkrvars.hcl ./packer/aws.pkr.hcl
 
 ##### create EC2 instance with this AMI image and the following command to check postgres is comaptable in the created instance 
 
+# Get the latest AMI ID
+        latest_ami=$(aws ec2 describe-images \
+          --executable-users self \
+          --filters "Name=state,Values=available" "Name=architecture,Values=x86_64" "Name=root-device-type,Values=ebs" \
+          --query "reverse(sort_by(Images, &CreationDate))[0].ImageId" --output text)
+        echo "Latest AMI ID: $latest_ami"
+
+        # Get the latest launch template version
+        latest_version=$(aws ec2 describe-launch-template-versions \
+          --launch-template-id lt-0618ba0896499b77d \
+          --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
+        echo "Latest Launch Template Version: $latest_version"
+
+        # Create a new launch template version
+        aws ec2 create-launch-template-version \
+          --launch-template-id lt-0618ba0896499b77d \
+          --source-version $latest_version \
+          --launch-template-data '{"ImageId":"'"$latest_ami"'"}'
+        echo "Launch template updated with AMI ID: $latest_ami"
+
+        # explicitly set the newly created version as the default
+        new_version=$((latest_version+1))
+        aws ec2 modify-launch-template \
+          --launch-template-id lt-0618ba0896499b77d \
+          --default-version $new_version
+        echo "Updated launch template to default version $new_version"
+
+
+        # Update the auto-scaling group to use the new launch template version
+        aws autoscaling update-auto-scaling-group \
+          --auto-scaling-group-name $asg_name \
+          --launch-template "LaunchTemplateId=lt-0618ba0896499b77d,Version=$new_version"
+        echo "Auto-scaling group updated with new launch template version"
