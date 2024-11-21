@@ -148,10 +148,13 @@ jobs:
       run: |
         asg_name="terraform-20241120032933702700000008"
 
-        asg_name=$(aws autoscaling describe-auto-scaling-groups \
-          --query "AutoScalingGroups[?Tags[?Key=='Environment' && Value=='${AWS_PROFILE}']].AutoScalingGroupName" \
+        asg_nametest=$(aws autoscaling describe-auto-scaling-groups \
+          --query "AutoScalingGroups | sort_by(@, &AutoScalingGroupARN)[-1].AutoScalingGroupName" \
           --output text)
-        echo "Auto Scaling Group Name: $asg_name"
+
+        echo "Latest Auto Scaling Group Name: $asg_nametest"
+        echo "Latest Auto Scaling Group Name: $asg_name"
+
         launch_template_id=$(aws autoscaling describe-auto-scaling-groups \
           --auto-scaling-group-names $asg_name \
           --query "AutoScalingGroups[0].LaunchTemplate.LaunchTemplateId" \
