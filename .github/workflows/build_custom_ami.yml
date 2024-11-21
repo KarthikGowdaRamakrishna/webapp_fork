@@ -200,6 +200,11 @@ jobs:
         
     - name: Refresh Auto Scaling Group
       run: |
+        asg_name=$(aws autoscaling describe-auto-scaling-groups \
+          --query "AutoScalingGroups | sort_by(@, &AutoScalingGroupARN)[-1].AutoScalingGroupName" \
+          --output text)
+        echo "Latest Auto Scaling Group Name: $asg_name"
+        
         # Start instance refresh for the Auto Scaling Group
         refresh_id=$(aws autoscaling start-instance-refresh \
           --auto-scaling-group-name $asg_name \
