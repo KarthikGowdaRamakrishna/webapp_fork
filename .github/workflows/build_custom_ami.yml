@@ -146,13 +146,10 @@ jobs:
 
     - name: Update Launch Template
       run: |
-        asg_nametest="terraform-20241120032933702700000008"
-
+        
         asg_name=$(aws autoscaling describe-auto-scaling-groups \
           --query "AutoScalingGroups | sort_by(@, &AutoScalingGroupARN)[-1].AutoScalingGroupName" \
           --output text)
-
-        echo "Latest Auto Scaling Group testName: $asg_nametest"
         echo "Latest Auto Scaling Group Name: $asg_name"
 
         launch_template_id=$(aws autoscaling describe-auto-scaling-groups \

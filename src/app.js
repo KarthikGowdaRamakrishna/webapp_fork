@@ -20,7 +20,7 @@ app.post('/v1/user', createUser);
 app.get('/v1/user/self', authenticateUser, blockUnverifiedUsers, getUserInfo);
 app.put('/v1/user/self', authenticateUser, blockUnverifiedUsers, updateUser);
 //Define profile picture-related routes
-app.post('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
+app.post('/v1/user/self/pic', authenticateUser, blockUnverifiedUsers, async (req, res, next) => {
   try {
     await uploadProfilePic(req, res);
   } catch (error) {
@@ -29,7 +29,7 @@ app.post('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
   }
 });
 
-app.get('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
+app.get('/v1/user/self/pic', authenticateUser, blockUnverifiedUsers, async (req, res, next) => {
   try {
     await getProfilePic(req, res);
   } catch (error) {
@@ -38,7 +38,7 @@ app.get('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
   }
 });
 
-app.delete('/v1/user/self/pic', authenticateUser, async (req, res, next) => {
+app.delete('/v1/user/self/pic', authenticateUser, blockUnverifiedUsers, async (req, res, next) => {
   try {
     await deleteProfilePic(req, res);
   } catch (error) {
