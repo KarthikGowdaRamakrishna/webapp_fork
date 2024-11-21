@@ -202,7 +202,7 @@ jobs:
       run: |
         # Start instance refresh for the Auto Scaling Group
         refresh_id=$(aws autoscaling start-instance-refresh \
-          --auto-scaling-group-name terraform-20241120032933702700000008 \
+          --auto-scaling-group-name $asg_name \
           --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}' \
           --query 'InstanceRefreshId' --output text)
         echo "Instance Refresh ID: $refresh_id"
@@ -210,7 +210,7 @@ jobs:
         # Monitor the instance refresh status
         while true; do
           refresh_status=$(aws autoscaling describe-instance-refreshes \
-            --auto-scaling-group-name terraform-20241120032933702700000008 \
+            --auto-scaling-group-name $asg_name \
             --query "InstanceRefreshes[?InstanceRefreshId=='$refresh_id'].Status" \
             --output text)
           echo "Instance Refresh Status: $refresh_status"
