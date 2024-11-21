@@ -148,6 +148,17 @@ jobs:
       run: |
         asg_name="terraform-20241120032933702700000008"
 
+        asg_name=$(aws autoscaling describe-auto-scaling-groups \
+          --query "AutoScalingGroups[?Tags[?Key=='Environment' && Value=='${AWS_PROFILE}'']].AutoScalingGroupName" \
+          --output text)
+        echo "Auto Scaling Group Name: $asg_name"
+        launch_template_id=$(aws autoscaling describe-auto-scaling-groups \
+          --auto-scaling-group-names $asg_name \
+          --query "AutoScalingGroups[0].LaunchTemplate.LaunchTemplateId" \
+          --output text)
+        echo "Launch Template ID: $launch_template_id"
+
+
         # Get the latest AMI ID
         latest_ami=$(aws ec2 describe-images \
           --executable-users self \
@@ -168,10 +179,18 @@ jobs:
           --launch-template-data '{"ImageId":"'"$latest_ami"'"}'
         echo "Launch template updated with AMI ID: $latest_ami"
 
+        # explicitly set the newly created version as the default
+        new_version=$((latest_version+1))
+        aws ec2 modify-launch-template \
+          --launch-template-id lt-0618ba0896499b77d \
+          --default-version $new_version
+        echo "Updated launch template to default version $new_version"
+
+
         # Update the auto-scaling group to use the new launch template version
         aws autoscaling update-auto-scaling-group \
           --auto-scaling-group-name $asg_name \
-          --launch-template "LaunchTemplateId=lt-0618ba0896499b77d,Version=$((latest_version+1))"
+          --launch-template "LaunchTemplateId=lt-0618ba0896499b77d,Version=$new_version"
         echo "Auto-scaling group updated with new launch template version"
 
     - name: Refresh Auto Scaling Group
