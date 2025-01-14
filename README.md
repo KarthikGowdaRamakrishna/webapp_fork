@@ -2,6 +2,13 @@
 
 This is a Node.js application using Express, Sequelize, and PostgreSQL.
 
+# Infrastructure Repo
+https://github.com/CSYE-6225CloudNetComp/tf-aws-infra
+
+# Serverless function repo
+https://github.com/CSYE-6225CloudNetComp/serverless
+
+
 ## Prerequisites
 
 - **Node.js**: Ensure you have Node.js installed on your system. You can download it from [Node.js Official Website](https://nodejs.org/).
